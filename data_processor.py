@@ -4,18 +4,18 @@ import pandas as pd
 
 class BrawlStarsDataProcessor:
     """
-    Verarbeitet und formatiert Daten aus der Brawl Stars API.
+    Processes and formats data from the Brawl Stars API.
     """
 
     def calculate_battle_statistics(self, battles: List[Dict]) -> Dict[str, Any]:
         """
-        Berechnet Statistiken aus den Battle-Log-Daten.
+        Calculates statistics from battle log data.
 
         Args:
-            battles (List[Dict]): Liste der formatierten Kämpfe
+            battles (List[Dict]): List of formatted battles
 
         Returns:
-            Dict[str, Any]: Berechnete Statistiken
+            Dict[str, Any]: Calculated statistics
         """
         if not battles:
             return {
@@ -25,7 +25,7 @@ class BrawlStarsDataProcessor:
             }
 
         total_games = len(battles)
-        victories = sum(1 for b in battles if b['Ergebnis'] == 'Sieg')
+        victories = sum(1 for b in battles if b['Result'] == 'Victory')
         win_rate = (victories / total_games * 100) if total_games > 0 else 0
 
         return {
@@ -36,14 +36,14 @@ class BrawlStarsDataProcessor:
 
     def format_battle_log(self, battles: Dict[str, Any], player_tag: str) -> Tuple[List[Dict], int]:
         """
-        Formatiert das Battle-Log und zählt Star Player Auszeichnungen.
+        Formats the battle log and counts star player awards.
 
         Args:
-            battles (Dict[str, Any]): Rohdaten des Battle-Logs
-            player_tag (str): Tag des Spielers für Star Player Vergleich
+            battles (Dict[str, Any]): Raw battle log data
+            player_tag (str): Player tag for star player comparison
 
         Returns:
-            Tuple[List[Dict], int]: (Formatierte Battles, Anzahl Star Player Auszeichnungen)
+            Tuple[List[Dict], int]: (Formatted battles, Number of star player awards)
         """
         if not battles or 'items' not in battles:
             return [], 0
@@ -51,14 +51,14 @@ class BrawlStarsDataProcessor:
         formatted_battles = []
         star_player_count = 0
 
-        for battle in battles['items'][:20]:  # Begrenzt auf die letzten 20 Spiele
+        for battle in battles['items'][:20]:  # Limited to last 20 games
             try:
                 battle_info = self._format_single_battle(battle, player_tag)
                 if battle_info.get('Star Player'):
                     star_player_count += 1
                 formatted_battles.append(battle_info)
             except Exception as e:
-                print(f"Fehler bei der Verarbeitung eines Kampfes: {e}")
+                print(f"Error processing battle: {e}")
                 continue
 
         return formatted_battles, star_player_count
@@ -66,21 +66,21 @@ class BrawlStarsDataProcessor:
     @staticmethod
     def _format_single_battle(battle: Dict[str, Any], player_tag: str) -> Dict[str, Any]:
         """
-        Formatiert die Daten eines einzelnen Kampfes.
+        Formats the data of a single battle.
 
         Args:
-            battle (Dict[str, Any]): Rohdaten eines einzelnen Kampfes
-            player_tag (str): Tag des Spielers
+            battle (Dict[str, Any]): Raw data of a single battle
+            player_tag (str): Player tag
 
         Returns:
-            Dict[str, Any]: Formatierte Kampfdaten
+            Dict[str, Any]: Formatted battle data
         """
         return {
-            'Zeit': BrawlStarsDataProcessor._format_battle_time(battle.get('battleTime', '')),
-            'Modus': BrawlStarsDataProcessor._get_battle_mode(battle),
-            'Typ': BrawlStarsDataProcessor._get_battle_type(battle),
-            'Ergebnis': BrawlStarsDataProcessor._get_battle_result(battle),
-            'Trophäen': BrawlStarsDataProcessor._format_trophy_change(battle),
+            'Time': BrawlStarsDataProcessor._format_battle_time(battle.get('battleTime', '')),
+            'Mode': BrawlStarsDataProcessor._get_battle_mode(battle),
+            'Type': BrawlStarsDataProcessor._get_battle_type(battle),
+            'Result': BrawlStarsDataProcessor._get_battle_result(battle),
+            'Trophies': BrawlStarsDataProcessor._format_trophy_change(battle),
             'Star Player': BrawlStarsDataProcessor._check_star_player(battle, player_tag),
             'Brawler': BrawlStarsDataProcessor._get_player_brawler(battle, player_tag),
             'Power Level': BrawlStarsDataProcessor._get_power_level(battle, player_tag)
@@ -89,74 +89,74 @@ class BrawlStarsDataProcessor:
     @staticmethod
     def _format_battle_time(battle_time: str) -> str:
         """
-        Formatiert den Zeitstempel eines Kampfes.
+        Formats the timestamp of a battle.
 
         Args:
-            battle_time (str): Roher Zeitstempel
+            battle_time (str): Raw timestamp
 
         Returns:
-            str: Formatierter Zeitstempel
+            str: Formatted timestamp
         """
         try:
             return datetime.strptime(battle_time, '%Y%m%dT%H%M%S.000Z').strftime('%d.%m.%Y %H:%M')
         except (ValueError, TypeError):
-            return 'Unbekannt'
+            return 'Unknown'
 
     @staticmethod
     def _get_battle_mode(battle: Dict[str, Any]) -> str:
         """
-        Ermittelt den Spielmodus eines Kampfes.
+        Determines the game mode of a battle.
 
         Args:
-            battle (Dict[str, Any]): Kampfdaten
+            battle (Dict[str, Any]): Battle data
 
         Returns:
-            str: Spielmodus
+            str: Game mode
         """
-        return battle.get('battle', {}).get('mode', 'Unbekannt')
+        return battle.get('battle', {}).get('mode', 'Unknown')
 
     @staticmethod
     def _get_battle_type(battle: Dict[str, Any]) -> str:
         """
-        Ermittelt den Kampftyp.
+        Determines the battle type.
 
         Args:
-            battle (Dict[str, Any]): Kampfdaten
+            battle (Dict[str, Any]): Battle data
 
         Returns:
-            str: Kampftyp
+            str: Battle type
         """
-        return battle.get('battle', {}).get('type', 'Unbekannt')
+        return battle.get('battle', {}).get('type', 'Unknown')
 
     @staticmethod
     def _get_battle_result(battle: Dict[str, Any]) -> str:
         """
-        Ermittelt das Kampfergebnis und formatiert es einheitlich.
+        Determines the battle result and formats it uniformly.
 
         Args:
-            battle (Dict[str, Any]): Kampfdaten
+            battle (Dict[str, Any]): Battle data
 
         Returns:
-            str: Formatiertes Kampfergebnis ('Sieg', 'Niederlage' oder 'Unentschieden')
+            str: Formatted battle result ('Victory', 'Defeat' or 'Draw')
         """
         result = battle.get('battle', {}).get('result', '').lower()
         result_mapping = {
-            'victory': 'Sieg',
-            'defeat': 'Niederlage',
-            'draw': 'Unentschieden'
+            'victory': 'Victory',
+            'defeat': 'Defeat',
+            'draw': 'Draw'
         }
-        return result_mapping.get(result, 'Keine Wertung')
+        return result_mapping.get(result, 'No Result')
 
     @staticmethod
     def _format_trophy_change(battle: Dict[str, Any]) -> str:
         """
-        Formatiert die Trophäenänderung.
+        Formats the trophy change.
 
         Args:
-            battle (Dict[str, Any]): Kampfdaten
+            battle (Dict[str, Any]): Battle data
 
         Returns:
-            str: Formatierte Trophäenänderung
+            str: Formatted trophy change
         """
         trophy_change = battle.get('battle', {}).get('trophyChange', 0)
         if trophy_change > 0:
@@ -166,14 +166,14 @@ class BrawlStarsDataProcessor:
     @staticmethod
     def _check_star_player(battle: Dict[str, Any], player_tag: str) -> str:
         """
-        Prüft, ob der Spieler Star Player war.
+        Checks if the player was star player.
 
         Args:
-            battle (Dict[str, Any]): Kampfdaten
-            player_tag (str): Spieler-Tag
+            battle (Dict[str, Any]): Battle data
+            player_tag (str): Player tag
 
         Returns:
-            str: Star Player Symbol oder leer
+            str: Star player symbol or empty
         """
         star_player = battle.get('battle', {}).get('starPlayer', {})
         if star_player and star_player.get('tag', '').replace('#', '') == player_tag.replace('#', ''):
@@ -183,34 +183,34 @@ class BrawlStarsDataProcessor:
     @staticmethod
     def _get_player_brawler(battle: Dict[str, Any], player_tag: str) -> str:
         """
-        Ermittelt den verwendeten Brawler des Spielers.
+        Determines the brawler used by the player.
 
         Args:
-            battle (Dict[str, Any]): Kampfdaten
-            player_tag (str): Spieler-Tag
+            battle (Dict[str, Any]): Battle data
+            player_tag (str): Player tag
 
         Returns:
-            str: Name des Brawlers
+            str: Name of the brawler
         """
         try:
             for player in battle.get('battle', {}).get('players', []):
                 if player.get('tag', '').replace('#', '') == player_tag.replace('#', ''):
-                    return player.get('brawler', {}).get('name', 'Unbekannt')
+                    return player.get('brawler', {}).get('name', 'Unknown')
         except Exception:
             pass
-        return 'Unbekannt'
+        return 'Unknown'
 
     @staticmethod
     def _get_power_level(battle: Dict[str, Any], player_tag: str) -> int:
         """
-        Ermittelt das Power Level des verwendeten Brawlers.
+        Determines the power level of the used brawler.
 
         Args:
-            battle (Dict[str, Any]): Kampfdaten
-            player_tag (str): Spieler-Tag
+            battle (Dict[str, Any]): Battle data
+            player_tag (str): Player tag
 
         Returns:
-            int: Power Level des Brawlers
+            int: Power level of the brawler
         """
         try:
             for player in battle.get('battle', {}).get('players', []):
@@ -221,7 +221,15 @@ class BrawlStarsDataProcessor:
         return 0
 
     def calculate_brawler_statistics(self, player_data: Dict) -> Dict:
-        """Berechnet Statistiken über die Brawler eines Spielers"""
+        """
+        Calculates statistics about a player's brawlers.
+
+        Args:
+            player_data (Dict): Player data containing brawler information
+
+        Returns:
+            Dict: Dictionary containing brawler statistics
+        """
         if 'brawlers' not in player_data:
             return {
                 'total_brawlers': 0,
@@ -234,10 +242,10 @@ class BrawlStarsDataProcessor:
         total_brawlers = len(brawlers)
         total_trophies = sum(b['trophies'] for b in brawlers)
         
-        # Zähle Brawler mit Power 9 oder höher
+        # Count brawlers with power 9 or higher
         high_level_brawlers = sum(1 for b in brawlers if b.get('power', 0) >= 9)
         
-        # Zähle Brawler mit Power 11
+        # Count brawlers with power 11
         max_level_brawlers = sum(1 for b in brawlers if b.get('power', 0) == 11)
         
         return {

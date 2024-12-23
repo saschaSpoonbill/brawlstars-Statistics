@@ -17,7 +17,7 @@ logging.basicConfig(
 )
 
 class BrawlStarsApp:
-    # Vordefinierte Club-Tags (mit '#' am Anfang)
+    # Predefined club tags (starting with '#')
     CLUB_TAGS = {
         "Spike": "#2YJQ8LRCG",
         "grand": "#CV2LQLQU",
@@ -26,70 +26,70 @@ class BrawlStarsApp:
     }
 
     def __init__(self):
-        """Initialisierung der App mit API-Key und Clients"""
+        """Initialize the app with API key and clients"""
         self._load_environment()
         self.api_client = BrawlStarsAPI(self.api_key)
         self.data_processor = BrawlStarsDataProcessor()
         self.ui = BrawlStarsUI()
 
     def _load_environment(self) -> None:
-        """Laden der Umgebungsvariablen"""
+        """Load environment variables"""
         load_dotenv()
         self.api_key = os.getenv("BRAWLSTARS_API_KEY")
         self.openai_api_key = os.getenv("OPENAI_API_KEY")
         if not self.api_key:
-            raise ValueError("BRAWLSTARS_API_KEY muss in .env definiert sein")
+            raise ValueError("BRAWLSTARS_API_KEY must be defined in .env")
         if not self.openai_api_key:
-            raise ValueError("OPENAI_API_KEY muss in .env definiert sein")
+            raise ValueError("OPENAI_API_KEY must be defined in .env")
 
     def run(self) -> None:
-        """Hauptmethode zum Ausführen der App"""
+        """Main method to run the app"""
         selected_page = st.sidebar.radio(
             "Navigation",
-            ["Spielervergleich", "Brawler", "Clubs"],
+            ["Player Comparison", "Brawlers", "Clubs"],
             index=0
         )
 
-        if selected_page == "Spielervergleich":
+        if selected_page == "Player Comparison":
             self._show_player_comparison_page()
-        elif selected_page == "Brawler":
+        elif selected_page == "Brawlers":
             self._show_brawler_page()
         else:
             self._show_clubs_page()
 
     def _show_player_comparison_page(self) -> None:
-        """Zeigt die Seite mit dem Spielervergleich an"""
-        st.title("Brawl Stars Spielervergleich")
+        """Shows the player comparison page"""
+        st.title("Brawl Stars Player Comparison")
         
-        # Club-Informationen laden
+        # Load club information
         club_info = self._load_club_info()
         
-        # Spielerauswahl
+        # Player selection
         player1_tag, player2_tag = self._setup_player_selection(club_info)
         
         if player1_tag and player2_tag:
             self._display_player_comparison(player1_tag, player2_tag)
 
     def _show_brawler_page(self) -> None:
-        """Zeigt die Brawler-Analyse-Seite an"""
-        st.title("Brawler Analyse")
+        """Shows the brawler analysis page"""
+        st.title("Brawler Analysis")
         
-        # Lade alle Brawler
+        # Load all brawlers
         brawlers_data = self.api_client.get_brawlers()
         
         if not brawlers_data or 'items' not in brawlers_data:
-            st.error("Fehler beim Laden der Brawler-Daten")
+            st.error("Error loading brawler data")
             return
 
-        # Hole alle Brawler und sortiere sie alphabetisch
+        # Get all brawlers and sort them alphabetically
         brawlers = sorted(brawlers_data.get('items', []), key=lambda x: x.get('name', ''))
         
-        # Erstelle zwei Spalten: Eine für die Brawler-Liste und eine für die Details
+        # Create two columns: one for the brawler list and one for details
         col1, col2 = st.columns([1, 2])
         
         with col1:
-            st.subheader("Brawler auswählen")
-            # Erstelle eine Liste von Brawlern als Buttons
+            st.subheader("Select Brawler")
+            # Create a list of brawlers as buttons
             for brawler in brawlers:
                 if st.button(
                     brawler['name'],
@@ -107,21 +107,21 @@ class BrawlStarsApp:
                 )
 
     def _show_brawler_details(self, brawler_id: str, brawler_name: str) -> None:
-        """Zeigt detaillierte Informationen für einen ausgewählten Brawler"""
-        st.subheader(f"Details für {brawler_name}")
+        """Shows detailed information for a selected brawler"""
+        st.subheader(f"Details for {brawler_name}")
         
-        # Lade detaillierte Brawler-Informationen
+        # Load detailed brawler information
         brawler_details = self.api_client.get_brawler_info(brawler_id)
         
         if not brawler_details:
-            st.error("Fehler beim Laden der Brawler-Details")
+            st.error("Error loading brawler details")
             return
         
-        # Erstelle Tabs für verschiedene Informationen
-        tab1, tab2 = st.tabs(["Fähigkeiten", "Globales Ranking"])
+        # Create tabs for different information
+        tab1, tab2 = st.tabs(["Abilities", "Global Ranking"])
         
         with tab1:
-            # Star Powers anzeigen
+            # Display Star Powers
             st.markdown("### Star Powers")
             for star_power in brawler_details.get('starPowers', []):
                 st.markdown(f"""
@@ -136,7 +136,7 @@ class BrawlStarsApp:
                     </div>
                 """, unsafe_allow_html=True)
             
-            # Gadgets anzeigen
+            # Display Gadgets
             st.markdown("### Gadgets")
             for gadget in brawler_details.get('gadgets', []):
                 st.markdown(f"""
@@ -152,32 +152,32 @@ class BrawlStarsApp:
                 """, unsafe_allow_html=True)
         
         with tab2:
-            # Lade und zeige Ranking-Informationen
+            # Load and display ranking information
             rankings = self.api_client.get_brawler_rankings(brawler_id)
             if rankings and 'items' in rankings:
-                st.markdown("### Top 10 Spieler Global")
+                st.markdown("### Top 10 Players Global")
                 ranking_data = []
                 for idx, player in enumerate(rankings['items'][:10], 1):
                     ranking_data.append({
-                        'Rang': idx,
-                        'Spieler': player['name'],
-                        'Trophäen': player['trophies'],
-                        'Club': player.get('club', {}).get('name', 'Kein Club')
+                        'Rank': idx,
+                        'Player': player['name'],
+                        'Trophies': player['trophies'],
+                        'Club': player.get('club', {}).get('name', 'No Club')
                     })
                 
                 st.dataframe(
                     ranking_data,
                     column_config={
-                        'Rang': st.column_config.NumberColumn(format="%d"),
-                        'Trophäen': st.column_config.NumberColumn(format="%d")
+                        'Rank': st.column_config.NumberColumn(format="%d"),
+                        'Trophies': st.column_config.NumberColumn(format="%d")
                     },
                     hide_index=True
                 )
             else:
-                st.warning("Keine Ranking-Daten verfügbar")
+                st.warning("No ranking data available")
 
     def _load_club_info(self) -> Dict:
-        """Lädt Informationen für alle vordefinierten Clubs"""
+        """Loads information for all predefined clubs"""
         club_info = {}
         for name, tag in self.CLUB_TAGS.items():
             club_data = self.api_client.get_club_info(tag)
@@ -186,22 +186,22 @@ class BrawlStarsApp:
         return club_info
 
     def _setup_player_selection(self, club_info: Dict) -> Tuple[Optional[str], Optional[str]]:
-        """Erstellt die Benutzeroberfläche für die Spielerauswahl"""
+        """Creates the user interface for player selection"""
         col1, col2 = st.columns(2)
 
         with col1:
-            st.subheader("Spieler 1")
-            # Tab für Auswahlmethode
+            st.subheader("Player 1")
+            # Tab for selection method
             selection_mode1 = st.radio(
-                "Auswahlmethode für Spieler 1",
-                ["Aus Club auswählen", "Spieler-ID eingeben"],
+                "Selection method for Player 1",
+                ["Select from Club", "Enter Player ID"],
                 key="selection_mode1",
                 horizontal=True
             )
             
-            if selection_mode1 == "Aus Club auswählen":
+            if selection_mode1 == "Select from Club":
                 club1 = st.selectbox(
-                    "Club auswählen (Spieler 1)",
+                    "Select Club (Player 1)",
                     options=list(club_info.keys()),
                     key="club1",
                     index=list(club_info.keys()).index("Spike")
@@ -213,7 +213,7 @@ class BrawlStarsApp:
                         default_index1 = next((i for i, m in enumerate(member_list1) 
                                             if "Spoony" in m), 0)
                         player1 = st.selectbox(
-                            "Spieler 1 auswählen",
+                            "Select Player 1",
                             options=member_list1,
                             key="player1",
                             index=default_index1
@@ -221,30 +221,30 @@ class BrawlStarsApp:
                         player1_tag = player1.split('(')[1].rstrip(')') if player1 else None
                     else:
                         player1_tag = None
-                        st.error("Fehler beim Laden der Club-Mitglieder")
+                        st.error("Error loading club members")
             else:
                 player1_tag = st.text_input(
-                    "Spieler-ID eingeben (mit #)",
+                    "Enter Player ID (with #)",
                     placeholder="#2YJQ8LRCG",
                     key="player1_direct"
                 )
                 if player1_tag and not player1_tag.startswith('#'):
-                    st.error("Spieler-ID muss mit # beginnen")
+                    st.error("Player ID must start with #")
                     player1_tag = None
 
         with col2:
-            st.subheader("Spieler 2")
-            # Tab für Auswahlmethode
+            st.subheader("Player 2")
+            # Tab for selection method
             selection_mode2 = st.radio(
-                "Auswahlmethode für Spieler 2",
-                ["Aus Club auswählen", "Spieler-ID eingeben"],
+                "Selection method for Player 2",
+                ["Select from Club", "Enter Player ID"],
                 key="selection_mode2",
                 horizontal=True
             )
             
-            if selection_mode2 == "Aus Club auswählen":
+            if selection_mode2 == "Select from Club":
                 club2 = st.selectbox(
-                    "Club auswählen (Spieler 2)",
+                    "Select Club (Player 2)",
                     options=list(club_info.keys()),
                     key="club2",
                     index=list(club_info.keys()).index("Spike")
@@ -256,7 +256,7 @@ class BrawlStarsApp:
                         default_index2 = next((i for i, m in enumerate(member_list2) 
                                             if "Hydropi" in m), 0)
                         player2 = st.selectbox(
-                            "Spieler 2 auswählen",
+                            "Select Player 2",
                             options=member_list2,
                             key="player2",
                             index=default_index2
@@ -264,44 +264,44 @@ class BrawlStarsApp:
                         player2_tag = player2.split('(')[1].rstrip(')') if player2 else None
                     else:
                         player2_tag = None
-                        st.error("Fehler beim Laden der Club-Mitglieder")
+                        st.error("Error loading club members")
             else:
                 player2_tag = st.text_input(
-                    "Spieler-ID eingeben (mit #)",
+                    "Enter Player ID (with #)",
                     placeholder="#2YJQ8LRCG",
                     key="player2_direct"
                 )
                 if player2_tag and not player2_tag.startswith('#'):
-                    st.error("Spieler-ID muss mit # beginnen")
+                    st.error("Player ID must start with #")
                     player2_tag = None
 
-        # Validierung der Spieler-Tags vor der Rückgabe
+        # Validate player tags before returning
         if player1_tag and player2_tag:
-            # Prüfe ob die Spieler existieren
+            # Check if players exist
             test_player1 = self.api_client.get_player_info(player1_tag)
             test_player2 = self.api_client.get_player_info(player2_tag)
             
             if not test_player1:
-                st.error(f"Spieler 1 mit Tag {player1_tag} wurde nicht gefunden.")
+                st.error(f"Player 1 with tag {player1_tag} not found.")
                 return None, None
             
             if not test_player2:
-                st.error(f"Spieler 2 mit Tag {player2_tag} wurde nicht gefunden.")
+                st.error(f"Player 2 with tag {player2_tag} not found.")
                 return None, None
 
         return player1_tag, player2_tag
 
     def _display_player_comparison(self, player1_tag: str, player2_tag: str) -> None:
-        """Zeigt den Vergleich zwischen zwei Spielern an"""
-        # Spielerdaten laden
+        """Shows the comparison between two players"""
+        # Load player data
         player1_data = self.api_client.get_player_info(player1_tag)
         player2_data = self.api_client.get_player_info(player2_tag)
 
         if not player1_data or not player2_data:
-            st.error("Fehler beim Laden der Spielerdaten")
+            st.error("Error loading player data")
             return
 
-        # Club-Informationen laden
+        # Load club information
         club1_info = None
         club2_info = None
         if 'club' in player1_data and player1_data['club'].get('tag'):
@@ -309,53 +309,53 @@ class BrawlStarsApp:
         if 'club' in player2_data and player2_data['club'].get('tag'):
             club2_info = self.api_client.get_club_info(player2_data['club']['tag'])
 
-        # Spieler-Statistiken anzeigen
+        # Display player statistics
         col1, col2 = st.columns(2)
         self.ui.display_player_stats(player1_data, club1_info, col1)
         self.ui.display_player_stats(player2_data, club2_info, col2)
 
-        # Trophäen-Vergleich als Balkendiagramm mit Plotly
-        st.header("Trophäen-Vergleich")
+        # Trophy comparison as bar chart with Plotly
+        st.header("Trophy Comparison")
         trophy_data = {
-            'Spieler': [player1_data['name'], player2_data['name']],
-            'Trophäen': [player1_data['trophies'], player2_data['trophies']]
+            'Player': [player1_data['name'], player2_data['name']],
+            'Trophies': [player1_data['trophies'], player2_data['trophies']]
         }
         trophy_df = pd.DataFrame(trophy_data)
         
-        # Erstelle ein Plotly-Balkendiagramm mit dunkelblau und dunkelrot
+        # Create a Plotly bar chart with dark blue and dark red
         fig = px.bar(
             trophy_df,
-            x='Spieler',
-            y='Trophäen',
-            color='Spieler',
+            x='Player',
+            y='Trophies',
+            color='Player',
             color_discrete_map={
-                player1_data['name']: '#8B0000',  # Dunkelrot für Spieler 1
-                player2_data['name']: '#00008B'   # Dunkelblau für Spieler 2
+                player1_data['name']: '#8B0000',  # Dark red for Player 1
+                player2_data['name']: '#00008B'   # Dark blue for Player 2
             },
-            text='Trophäen'
+            text='Trophies'
         )
         
-        # Anpassen des Layouts
-        fig.update_traces(textposition='outside')  # Werte über den Balken
+        # Adjust layout
+        fig.update_traces(textposition='outside')  # Values above bars
         fig.update_layout(
-            showlegend=False,  # Legende ausblenden
-            plot_bgcolor='rgba(0,0,0,0)',  # Transparenter Hintergrund
-            height=400  # Höhe des Diagramms
+            showlegend=False,  # Hide legend
+            plot_bgcolor='rgba(0,0,0,0)',  # Transparent background
+            height=400  # Chart height
         )
         
         st.plotly_chart(fig, use_container_width=True)
 
-        # Siege-Vergleich als Balkendiagramm
-        st.header("Siege-Vergleich")
+        # Victory comparison as bar chart
+        st.header("Victory Comparison")
         
-        # Daten für verschiedene Siegestypen vorbereiten
+        # Prepare data for different victory types
         victories_data = {
-            'Spieler': [
+            'Player': [
                 player1_data['name'], player1_data['name'], player1_data['name'],
                 player2_data['name'], player2_data['name'], player2_data['name']
             ],
-            'Siegestyp': ['3vs3', 'Solo', 'Duo'] * 2,
-            'Anzahl': [
+            'Victory Type': ['3vs3', 'Solo', 'Duo'] * 2,
+            'Count': [
                 player1_data.get('3vs3Victories', 0),
                 player1_data.get('soloVictories', 0),
                 player1_data.get('duoVictories', 0),
@@ -366,86 +366,86 @@ class BrawlStarsApp:
         }
         victories_df = pd.DataFrame(victories_data)
         
-        # Erstelle ein gruppiertes Balkendiagramm für die Siege
+        # Create a grouped bar chart for victories
         fig_victories = px.bar(
             victories_df,
-            x='Siegestyp',
-            y='Anzahl',
-            color='Spieler',
-            barmode='group',  # Gruppierte Balken nebeneinander
+            x='Victory Type',
+            y='Count',
+            color='Player',
+            barmode='group',  # Grouped bars side by side
             color_discrete_map={
-                player1_data['name']: '#8B0000',  # Dunkelrot für Spieler 1
-                player2_data['name']: '#00008B'   # Dunkelblau für Spieler 2
+                player1_data['name']: '#8B0000',  # Dark red for Player 1
+                player2_data['name']: '#00008B'   # Dark blue for Player 2
             },
-            text='Anzahl'  # Zeigt die Werte über den Balken an
+            text='Count'  # Show values above bars
         )
         
-        # Anpassen des Layouts
+        # Adjust layout
         fig_victories.update_traces(textposition='outside')
         fig_victories.update_layout(
-            showlegend=True,  # Legende anzeigen für bessere Unterscheidung
+            showlegend=True,  # Show legend for better distinction
             plot_bgcolor='rgba(0,0,0,0)',
             height=400,
-            xaxis_title="Spielmodus",
-            yaxis_title="Anzahl Siege"
+            xaxis_title="Game Mode",
+            yaxis_title="Number of Victories"
         )
         
         st.plotly_chart(fig_victories, use_container_width=True)
 
-        # Brawler-Statistiken anzeigen
-        st.header("Brawler Vergleich")
+        # Display brawler statistics
+        st.header("Brawler Comparison")
         brawler_col1, brawler_col2 = st.columns(2)
         
-        # Berechne und zeige Brawler-Statistiken
+        # Calculate and show brawler statistics
         brawler_stats1 = self.data_processor.calculate_brawler_statistics(player1_data)
         brawler_stats2 = self.data_processor.calculate_brawler_statistics(player2_data)
         
         self.ui.display_brawler_stats(brawler_stats1, brawler_col1)
         self.ui.display_brawler_stats(brawler_stats2, brawler_col2)
 
-        # Battle-Logs anzeigen
+        # Display battle logs
         battles1 = self.api_client.get_battle_log(player1_tag)
         battles2 = self.api_client.get_battle_log(player2_tag)
         
         if battles1 and battles2:
             self._display_battle_logs(battles1, battles2, player1_tag, player2_tag)
             
-            # KI-Analyse hinzufügen
-            st.header("KI-Analyse des Vergleichs")
+            # Add AI analysis
+            st.header("AI Analysis of Comparison")
             
-            # Battle-Statistiken berechnen
+            # Calculate battle statistics
             formatted_battles1, _ = self.data_processor.format_battle_log(battles1, player1_tag)
             formatted_battles2, _ = self.data_processor.format_battle_log(battles2, player2_tag)
             battle_stats1 = self.data_processor.calculate_battle_statistics(formatted_battles1)
             battle_stats2 = self.data_processor.calculate_battle_statistics(formatted_battles2)
             
-            # KI-Analyse generieren
+            # Generate AI analysis
             analysis = self._generate_ai_comparison(
                 player1_data, player2_data,
                 brawler_stats1, brawler_stats2,
                 battle_stats1, battle_stats2
             )
             
-            # Analyse in einem schönen Container anzeigen
+            # Display analysis in a nice container
             with st.container():
                 st.markdown(f"*{analysis}*")
 
     def _display_battle_logs(self, battles1: Dict, battles2: Dict, 
                            player1_tag: str, player2_tag: str) -> None:
-        """Zeigt die Battle-Logs beider Spieler an"""
-        st.header("Letzte Spiele")
+        """Shows the battle logs of both players"""
+        st.header("Recent Games")
         
-        # Trophäenverlauf als Line Chart
-        st.subheader("Trophäenverlauf der letzten Spiele")
+        # Trophy progression as line chart
+        st.subheader("Trophy Progression in Recent Games")
         
-        # Hole die Spielernamen aus den Player-Infos
+        # Get player names from player info
         player1_data = self.api_client.get_player_info(player1_tag)
         player2_data = self.api_client.get_player_info(player2_tag)
         
-        player1_name = player1_data['name'] if player1_data else "Spieler 1"
-        player2_name = player2_data['name'] if player2_data else "Spieler 2"
+        player1_name = player1_data['name'] if player1_data else "Player 1"
+        player2_name = player2_data['name'] if player2_data else "Player 2"
         
-        # Hilfsfunktion zum Berechnen der kumulierten Trophäen
+        # Helper function to calculate cumulative trophies
         def calculate_cumulative_trophies(battles, player_tag):
             trophy_changes = []
             cumulative = 0
@@ -466,50 +466,49 @@ class BrawlStarsApp:
                 
             return trophy_changes
 
-        # Berechne kumulierte Trophäen für beide Spieler
+        # Calculate cumulative trophies for both players
         trophies1 = calculate_cumulative_trophies(battles1, player1_tag)
         trophies2 = calculate_cumulative_trophies(battles2, player2_tag)
         
-        # Erstelle DataFrame für das Line Chart mit den tatsächlichen Namen
+        # Create DataFrame for the line chart with actual names
         chart_data = pd.DataFrame({
-            'Spiel': range(1, max(len(trophies1), len(trophies2)) + 1),
+            'Game': range(1, max(len(trophies1), len(trophies2)) + 1),
             player1_name: trophies1 + [None] * (len(trophies2) - len(trophies1)) if len(trophies2) > len(trophies1) else trophies1,
             player2_name: trophies2 + [None] * (len(trophies1) - len(trophies2)) if len(trophies1) > len(trophies2) else trophies2
         })
         
-        # Erstelle Line Chart mit Plotly und den tatsächlichen Namen
+        # Create line chart with Plotly and actual names
         fig = px.line(
             chart_data,
-            x='Spiel',
+            x='Game',
             y=[player1_name, player2_name],
             color_discrete_map={
-                player1_name: '#8B0000',  # Dunkelrot
-                player2_name: '#00008B'   # Dunkelblau
+                player1_name: '#8B0000',  # Dark red
+                player2_name: '#00008B'   # Dark blue
             }
         )
         
-        # Anpassen des Layouts
+        # Adjust layout
         fig.update_layout(
-            xaxis_title="Spiel Nummer",
-            yaxis_title="Kumulierte Trophäenänderung",
+            xaxis_title="Game Number",
+            yaxis_title="Cumulative Trophy Change",
             plot_bgcolor='rgba(0,0,0,0)',
             height=400
         )
         
         st.plotly_chart(fig, use_container_width=True)
         
-        # Ursprüngliche Battle-Log Anzeige
+        # Original battle log display
         col1, col2 = st.columns(2)
         
-        # Rest des ursprünglichen Codes...
         with col1:
             formatted_battles1, star_count1 = self.data_processor.format_battle_log(
                 battles1, player1_tag)
             if formatted_battles1:
                 stats1 = self.data_processor.calculate_battle_statistics(formatted_battles1)
                 
-                st.metric("Siege", f"{stats1['victories']}/{stats1['total_games']}")
-                st.metric("Siegrate", f"{stats1['win_rate']:.1f}%")
+                st.metric("Victories", f"{stats1['victories']}/{stats1['total_games']}")
+                st.metric("Win Rate", f"{stats1['win_rate']:.1f}%")
                 st.metric("Star Player", f"{star_count1}x ⭐")
                 
                 st.dataframe(pd.DataFrame(formatted_battles1))
@@ -520,8 +519,8 @@ class BrawlStarsApp:
             if formatted_battles2:
                 stats2 = self.data_processor.calculate_battle_statistics(formatted_battles2)
                 
-                st.metric("Siege", f"{stats2['victories']}/{stats2['total_games']}")
-                st.metric("Siegrate", f"{stats2['win_rate']:.1f}%")
+                st.metric("Victories", f"{stats2['victories']}/{stats2['total_games']}")
+                st.metric("Win Rate", f"{stats2['win_rate']:.1f}%")
                 st.metric("Star Player", f"{star_count2}x ⭐")
                 
                 st.dataframe(pd.DataFrame(formatted_battles2))
@@ -580,15 +579,15 @@ class BrawlStarsApp:
             return "Fehler bei der KI-Analyse. Bitte versuchen Sie es später erneut."
 
     def _show_clubs_page(self) -> None:
-        """Zeigt die Club-Analyse-Seite an"""
-        st.title("Club Analyse")
+        """Shows the club analysis page"""
+        st.title("Club Analysis")
 
-        # Zwei Tabs für vorhandene Clubs und eigene Club-ID
-        tab1, tab2 = st.tabs(["Vorhandene Clubs", "Club-ID eingeben"])
+        # Two tabs for existing clubs and custom club ID
+        tab1, tab2 = st.tabs(["Existing Clubs", "Enter Club ID"])
 
         with tab1:
             selected_club = st.selectbox(
-                "Club auswählen",
+                "Select Club",
                 options=list(self.CLUB_TAGS.keys())
             )
             if selected_club:
@@ -597,12 +596,12 @@ class BrawlStarsApp:
 
         with tab2:
             custom_tag = st.text_input(
-                "Club-Tag eingeben (mit #)",
+                "Enter Club Tag (with #)",
                 placeholder="#2YJQ8LRCG"
             )
             if custom_tag:
                 if not custom_tag.startswith('#'):
-                    st.error("Club-Tag muss mit # beginnen")
+                    st.error("Club tag must start with #")
                 else:
                     self._display_club_info(custom_tag)
 

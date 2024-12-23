@@ -1,97 +1,97 @@
-# Brawl Stars Spielervergleich
+# Brawl Stars Player Comparison
 
-Eine Streamlit-Anwendung zum Vergleich von Brawl Stars Spielern mit erweiterten Statistiken, Battle-Logs, Brawler-Analysen und KI-gestützten Vergleichen.
+A Streamlit application for comparing Brawl Stars players with advanced statistics, battle logs, brawler analysis and AI-powered comparisons.
 
 ## Features
 
-### Spielervergleich
-- Detaillierte Statistiken zweier Spieler im direkten Vergleich
-- Flexible Spielerauswahl über Club-Mitgliederlisten oder direkte Tag-Eingabe
-- Visualisierung von Trophäen und Siegen
-- Battle-Log Analyse mit Siegquoten und Star-Player-Statistiken
-- KI-gestützte Zusammenfassung des Spielervergleichs
+### Player Comparison
+- Detailed statistics of two players in direct comparison
+- Flexible player selection via club member lists or direct tag input
+- Visualization of trophies and victories
+- Battle log analysis with win rates and star player statistics
+- AI-powered summary of player comparison
 
-### Brawler-Analyse
-- Vollständige Liste aller verfügbaren Brawler
-- Detaillierte Informationen zu jedem Brawler
-- Star Powers und Gadgets Übersicht
-- Globales Ranking der Top-Spieler pro Brawler
-- Visuelle Darstellung der Brawler-Statistiken
+### Brawler Analysis
+- Complete list of all available brawlers
+- Detailed information for each brawler
+- Star Powers and Gadgets overview
+- Global ranking of top players per brawler
+- Visual representation of brawler statistics
 
-### Club-Analyse
-- Übersicht über Club-Statistiken
-- Mitgliederliste mit detaillierten Informationen
-- Trophäen-Verteilung innerhalb des Clubs
-- Rollen-Verteilung im Club
-- Vergleichsmöglichkeiten zwischen verschiedenen Clubs
+### Club Analysis
+- Overview of club statistics
+- Member list with detailed information
+- Trophy distribution within the club
+- Role distribution in the club
+- Comparison options between different clubs
 
-## Verwendung
+## Usage
 
-1. Nach dem Start öffnet sich das Dashboard im Standard-Webbrowser
-2. Navigation über das Seitenmenü:
-   - Spielervergleich
-   - Brawler-Analyse
-   - Club-Analyse
-3. Flexible Auswahlmöglichkeiten:
-   - Spieler aus Club-Listen
-   - Direkte Tag-Eingabe
-   - Brawler-Auswahl
-   - Club-Auswahl
+1. After starting, the dashboard opens in the default web browser
+2. Navigation via the side menu:
+   - Player Comparison
+   - Brawler Analysis
+   - Club Analysis
+3. Flexible selection options:
+   - Players from club lists
+   - Direct tag input
+   - Brawler selection
+   - Club selection
 
-## Projektstruktur
+## Project Structure
 
 ### main.py
-- Hauptanwendungsdatei mit der `BrawlStarsApp`-Klasse
-- Multi-Page-Navigation
-- Integration von OpenAI für KI-Analysen
-- Erweiterte Visualisierungen mit Plotly
+- Main application file with the `BrawlStarsApp` class
+- Multi-page navigation
+- OpenAI integration for AI analysis
+- Advanced visualizations with Plotly
 
 ### api_client.py
-- Vollständige Integration der Brawl Stars API
-- Cached API-Requests für bessere Performance
-- Erweiterte Fehlerbehandlung
-- Unterstützung für alle API-Endpunkte
+- Complete integration of the Brawl Stars API
+- Cached API requests for better performance
+- Advanced error handling
+- Support for all API endpoints
 
 ### data_processor.py
-- Umfangreiche Datenverarbeitung
-- Battle-Log-Analyse
-- Brawler-Statistiken
-- Club-Daten-Aufbereitung
+- Comprehensive data processing
+- Battle log analysis
+- Brawler statistics
+- Club data preparation
 
 ### ui_components.py
-- Modulare UI-Komponenten
-- Responsive Layouts
-- Interaktive Plotly-Visualisierungen
-- Einheitliches Styling
+- Modular UI components
+- Responsive layouts
+- Interactive Plotly visualizations
+- Unified styling
 
-## Technische Details
+## Technical Details
 
-### Verwendete Technologien
+### Technologies Used
 - Python 3.x
-- Streamlit für das Web-Interface
-- Pandas für Datenverarbeitung
-- Plotly für interaktive Visualisierungen
-- OpenAI API für KI-Analysen
+- Streamlit for web interface
+- Pandas for data processing
+- Plotly for interactive visualizations
+- OpenAI API for AI analysis
 
 ### Installation
 
-1. Repository klonen:
+1. Clone repository:
 ```bash
 git clone [repository-url]
 ```
 
-2. Virtuelle Umgebung erstellen und aktivieren:
+2. Create and activate virtual environment:
 ```bash
 python -m venv venv
-source venv/bin/activate  # Unter Windows: venv\Scripts\activate
+source venv/bin/activate  # On Windows: venv\Scripts\activate
 ```
 
-3. Abhängigkeiten installieren:
+3. Install dependencies:
 ```bash
 pip install -r requirements.txt
 ```
 
-4. `.env` Datei erstellen und API-Keys eintragen:
+4. Create `.env` file and enter API keys:
 ```
 # Brawl Stars API Key (https://developer.brawlstars.com/)
 BRAWLSTARS_API_KEY=your_brawlstars_api_key_here
@@ -100,20 +100,20 @@ BRAWLSTARS_API_KEY=your_brawlstars_api_key_here
 OPENAI_API_KEY=your_openai_api_key_here
 ```
 
-5. Starten Sie die Streamlit-Anwendung:
+5. Start the Streamlit application:
 ```bash
 streamlit run main.py
 ```
 
-Die Anwendung öffnet sich automatisch in Ihrem Standard-Webbrowser unter:
-   - Lokale URL: http://localhost:8501
-   - Netzwerk URL: http://192.168.x.x:8501 (für Zugriff im lokalen Netzwerk)
+The application will automatically open in your default web browser at:
+   - Local URL: http://localhost:8501
+   - Network URL: http://192.168.x.x:8501 (for access within local network)
 
-### Lizenz
+### License
 
-Dieses Projekt ist unter der MIT-Lizenz lizenziert. Siehe [LICENSE](LICENSE) für Details.
+This project is licensed under the MIT License. See [LICENSE](LICENSE) for details.
 
-### Autor
+### Author
 
 Sascha / saschaSpoonbill
 
