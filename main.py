@@ -5,7 +5,7 @@ import streamlit as st
 import pandas as pd
 import logging
 import plotly.express as px
-from openai import OpenAI
+import together
 
 from api_client import BrawlStarsAPI
 from data_processor import BrawlStarsDataProcessor
@@ -36,11 +36,13 @@ class BrawlStarsApp:
         """Load environment variables"""
         load_dotenv()
         self.api_key = os.getenv("BRAWLSTARS_API_KEY")
-        self.openai_api_key = os.getenv("OPENAI_API_KEY")
+        self.together_api_key = os.getenv("TOGETHER_API_KEY")
         if not self.api_key:
             raise ValueError("BRAWLSTARS_API_KEY must be defined in .env")
-        if not self.openai_api_key:
-            raise ValueError("OPENAI_API_KEY must be defined in .env")
+        if not self.together_api_key:
+            raise ValueError("TOGETHER_API_KEY must be defined in .env")
+        # Initialize Together AI
+        together.api_key = self.together_api_key
 
     def run(self) -> None:
         """Main method to run the app"""
@@ -410,28 +412,40 @@ class BrawlStarsApp:
         if battles1 and battles2:
             self._display_battle_logs(battles1, battles2, player1_tag, player2_tag)
             
-            # Add AI analysis
-            st.header("AI Analysis of Comparison")
-            
-            # Calculate battle statistics
-            formatted_battles1, _ = self.data_processor.format_battle_log(battles1, player1_tag)
-            formatted_battles2, _ = self.data_processor.format_battle_log(battles2, player2_tag)
-            battle_stats1 = self.data_processor.calculate_battle_statistics(formatted_battles1)
-            battle_stats2 = self.data_processor.calculate_battle_statistics(formatted_battles2)
-            
-            # Generate AI analysis
-            analysis = self._generate_ai_comparison(
-                player1_data, player2_data,
-                brawler_stats1, brawler_stats2,
-                battle_stats1, battle_stats2
-            )
-            
-            # Display analysis in a nice container
-            with st.container():
-                st.markdown(f"*{analysis}*")
+            # Add AI analysis button
+            st.header("AI Analysis")
+            if st.button("Generate AI Analysis"):
+                with st.spinner("Generating analysis..."):
+                    # Calculate statistics for analysis
+                    formatted_battles1, star_count1 = self.data_processor.format_battle_log(battles1, player1_tag)
+                    formatted_battles2, star_count2 = self.data_processor.format_battle_log(battles2, player2_tag)
+                    battle_stats1 = self.data_processor.calculate_battle_statistics(formatted_battles1)
+                    battle_stats2 = self.data_processor.calculate_battle_statistics(formatted_battles2)
+                    
+                    # Generate AI analysis
+                    analysis = self._generate_ai_comparison(
+                        player1_data, player2_data,
+                        brawler_stats1, brawler_stats2,
+                        battle_stats1, battle_stats2,
+                        star_count1, star_count2
+                    )
+                    
+                    # Display analysis in a nice container
+                    st.markdown("""
+                        <style>
+                            .analysis-container {
+                                padding: 20px;
+                                border-radius: 10px;
+                                background-color: rgba(255, 255, 255, 0.05);
+                                margin: 10px 0;
+                            }
+                        </style>
+                    """, unsafe_allow_html=True)
+                    
+                    st.markdown(f'<div class="analysis-container">{analysis}</div>', unsafe_allow_html=True)
 
     def _display_battle_logs(self, battles1: Dict, battles2: Dict, 
-                           player1_tag: str, player2_tag: str) -> None:
+                            player1_tag: str, player2_tag: str) -> None:
         """Shows the battle logs of both players"""
         st.header("Recent Games")
         
@@ -524,59 +538,6 @@ class BrawlStarsApp:
                 st.metric("Star Player", f"{star_count2}x ⭐")
                 
                 st.dataframe(pd.DataFrame(formatted_battles2))
-
-    def _generate_ai_comparison(self, player1_data: Dict, player2_data: Dict, 
-                          brawler_stats1: Dict, brawler_stats2: Dict,
-                          battle_stats1: Dict, battle_stats2: Dict) -> str:
-        """Generiert eine KI-basierte Analyse des Spielervergleichs"""
-        
-        # Erstelle den Prompt mit allen relevanten Informationen
-        prompt = f"""
-        Vergleiche die folgenden zwei Brawl Stars Spieler basierend auf ihren Statistiken:
-
-        Spieler 1 ({player1_data['name']}):
-        - Trophäen: {player1_data['highestTrophies']}
-        - 3vs3 Siege: {player1_data.get('3vs3Victories', 0)}
-        - Solo Siege: {player1_data.get('soloVictories', 0)}
-        - Duo Siege: {player1_data.get('duoVictories', 0)}
-        - Club Trophäen: {player1_data.get('club', {}).get('trophies', 0)}
-        - Anzahl Brawler: {brawler_stats1.get('total_brawlers', 0)}
-        - Brawler Power 9+: {brawler_stats1.get('high_level_brawlers', 0)}
-        - Brawler Power 11: {brawler_stats1.get('max_level_brawlers', 0)}
-        - Durchschnittliche Trophäen pro Brawler: {brawler_stats1.get('avg_trophies', 0):.1f}
-        - Siegrate letzte Spiele: {battle_stats1.get('win_rate', 0):.1f}%
-
-        Spieler 2 ({player2_data['name']}):
-        - Trophäen: {player2_data['highestTrophies']}
-        - 3vs3 Siege: {player2_data.get('3vs3Victories', 0)}
-        - Solo Siege: {player2_data.get('soloVictories', 0)}
-        - Duo Siege: {player2_data.get('duoVictories', 0)}
-        - Club Trophäen: {player2_data.get('club', {}).get('trophies', 0)}
-        - Anzahl Brawler: {brawler_stats2.get('total_brawlers', 0)}
-        - Brawler Power 9+: {brawler_stats2.get('high_level_brawlers', 0)}
-        - Brawler Power 11: {brawler_stats2.get('max_level_brawlers', 0)}
-        - Durchschnittliche Trophäen pro Brawler: {brawler_stats2.get('avg_trophies', 0):.1f}
-        - Siegrate letzte Spiele: {battle_stats2.get('win_rate', 0):.1f}%
-
-        Erstelle eine Analyse (maximal 6 Sätze)der Spieler im Vergleich. 
-        Hebe die wichtigsten Unterschiede hervor und erwähne, wer in welchen Bereichen stärker ist.
-        """
-
-        try:
-            client = OpenAI(api_key=self.openai_api_key)
-            response = client.chat.completions.create(
-                model="gpt-4o",
-                messages=[
-                    {"role": "system", "content": "Du bist ein Brawl Stars Experte, der Spielerstatistiken analysiert."},
-                    {"role": "user", "content": prompt}
-                ],
-                temperature=0.7,
-                max_tokens=300
-            )
-            return response.choices[0].message.content
-        except Exception as e:
-            logging.error(f"Fehler bei der OpenAI API: {str(e)}")
-            return "Fehler bei der KI-Analyse. Bitte versuchen Sie es später erneut."
 
     def _show_clubs_page(self) -> None:
         """Shows the club analysis page"""
@@ -684,6 +645,75 @@ class BrawlStarsApp:
             )
             fig_roles.update_layout(height=400)
             st.plotly_chart(fig_roles, use_container_width=True)
+
+    def _generate_ai_comparison(self, player1_data: Dict, player2_data: Dict,
+                              brawler_stats1: Dict, brawler_stats2: Dict,
+                              battle_stats1: Dict, battle_stats2: Dict,
+                              star_count1: int, star_count2: int) -> str:
+        """Generates an AI-based analysis of the player comparison"""
+        
+        prompt = f"""
+        Compare these two Brawl Stars players based on their statistics:
+
+        Player 1 ({player1_data['name']}):
+        - Highest Trophies: {player1_data['highestTrophies']}
+        - 3vs3 Victories: {player1_data.get('3vs3Victories', 0)}
+        - Solo Victories: {player1_data.get('soloVictories', 0)}
+        - Duo Victories: {player1_data.get('duoVictories', 0)}
+        - Club Trophies: {player1_data.get('club', {}).get('trophies', 0)}
+        - Total Brawlers: {brawler_stats1.get('total_brawlers', 0)}
+        - Brawlers Power 9+: {brawler_stats1.get('high_level_brawlers', 0)}
+        - Brawlers Power 11: {brawler_stats1.get('max_level_brawlers', 0)}
+        - Recent Win Rate: {battle_stats1.get('win_rate', 0):.1f}%
+        - Star Player Count: {star_count1}
+
+        Player 2 ({player2_data['name']}):
+        - Highest Trophies: {player2_data['highestTrophies']}
+        - 3vs3 Victories: {player2_data.get('3vs3Victories', 0)}
+        - Solo Victories: {player2_data.get('soloVictories', 0)}
+        - Duo Victories: {player2_data.get('duoVictories', 0)}
+        - Club Trophies: {player2_data.get('club', {}).get('trophies', 0)}
+        - Total Brawlers: {brawler_stats2.get('total_brawlers', 0)}
+        - Brawlers Power 9+: {brawler_stats2.get('high_level_brawlers', 0)}
+        - Brawlers Power 11: {brawler_stats2.get('max_level_brawlers', 0)}
+        - Recent Win Rate: {battle_stats2.get('win_rate', 0):.1f}%
+        - Star Player Count: {star_count2}
+
+        Create a concise analysis (4-6 sentences) comparing these players.
+        Highlight key differences and mention who is stronger in which areas.
+        Focus on the most significant stats that show the skill and progress level of each player.
+        """
+
+        try:
+            # Using Together AI's completion endpoint
+            response = together.Complete.create(
+                prompt=f"<human>You are a Brawl Stars expert. {prompt}</human><assistant>",
+                model="mistralai/Mixtral-8x7B-Instruct-v0.1",
+                max_tokens=300,
+                temperature=0.7,
+                top_k=50,
+                top_p=0.7,
+                repetition_penalty=1.1
+            )
+            
+            # Debug logging
+            logging.info(f"AI Response: {response}")
+            
+            # Extract the generated text from the response
+            if isinstance(response, dict):
+                # Navigate through the response structure
+                if 'output' in response and 'choices' in response['output']:
+                    choices = response['output']['choices']
+                    if choices and len(choices) > 0 and 'text' in choices[0]:
+                        return choices[0]['text'].strip()
+            
+            logging.error(f"Unexpected response structure: {response}")
+            return "Error: Could not extract analysis from AI response"
+            
+        except Exception as e:
+            error_msg = f"Error generating AI analysis: {str(e)}"
+            logging.error(error_msg)
+            return error_msg
 
 def main():
     """Hauptfunktion zum Starten der App"""
