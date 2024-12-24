@@ -71,7 +71,7 @@ A Streamlit application for comparing Brawl Stars players with advanced statisti
 - Streamlit for web interface
 - Pandas for data processing
 - Plotly for interactive visualizations
-- OpenAI API for AI analysis
+- Together AI API for AI analysis
 
 ### Installation
 
@@ -115,5 +115,5 @@ This project is licensed under the MIT License. See [LICENSE](LICENSE) for detai
 
 ### Author
 
-Sascha / saschaSpoonbill
+Sascha / saschaSpoonbill (supported by Cursor)
 
