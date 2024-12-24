@@ -71,7 +71,7 @@ A Streamlit application for comparing Brawl Stars players with advanced statisti
 - Streamlit for web interface
 - Pandas for data processing
 - Plotly for interactive visualizations
-- Together AI API for AI analysis
+- Together API for AI analysis
 
 ### Installation
 
