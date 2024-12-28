@@ -578,66 +578,66 @@ class BrawlStarsApp:
                     self._display_club_info(custom_tag)
 
     def _display_club_info(self, club_tag: str) -> None:
-        """Zeigt detaillierte Informationen für einen Club an"""
+        """Shows detailed information for a club"""
         club_info = self.api_client.get_club_info(club_tag)
         
         if not club_info:
-            st.error("Club nicht gefunden oder Fehler beim Laden der Daten")
+            st.error("Club not found or error loading data")
             return
 
-        # Club-Header mit Basis-Informationen
+        # Club header with basic information
         st.header(club_info['name'])
         col1, col2, col3 = st.columns(3)
         with col1:
-            st.metric("Trophäen", f"{club_info['trophies']:,}")
+            st.metric("Trophies", f"{club_info['trophies']:,}")
         with col2:
-            st.metric("Erforderliche Trophäen", f"{club_info.get('requiredTrophies', 0):,}")
+            st.metric("Required Trophies", f"{club_info.get('requiredTrophies', 0):,}")
         with col3:
-            st.metric("Mitglieder", f"{len(club_info.get('members', []))}/30")
+            st.metric("Members", f"{len(club_info.get('members', []))}/30")
 
-        # Club-Beschreibung
+        # Club description
         if club_info.get('description'):
-            st.markdown("### Beschreibung")
+            st.markdown("### Description")
             st.write(club_info['description'])
 
-        # Mitgliederliste
-        st.markdown("### Mitglieder")
+        # Member list
+        st.markdown("### Members")
         
         if 'members' in club_info:
-            # Erstelle DataFrame für Mitglieder
+            # Create DataFrame for members
             members_data = []
             for member in club_info['members']:
                 members_data.append({
                     'Name': member['name'],
-                    'Rolle': member['role'].capitalize(),
-                    'Trophäen': member['trophies'],
+                    'Role': member['role'].capitalize(),
+                    'Trophies': member['trophies'],
                     'Tag': member['tag']
                 })
             
             df = pd.DataFrame(members_data)
             
-            # Sortiere nach Trophäen absteigend
-            df = df.sort_values('Trophäen', ascending=False)
+            # Sort by trophies descending
+            df = df.sort_values('Trophies', ascending=False)
             
-            # Zeige die Tabelle mit angepasstem Styling
+            # Show table with adjusted styling
             st.dataframe(
                 df,
                 column_config={
                     'Name': st.column_config.TextColumn('Name'),
-                    'Rolle': st.column_config.TextColumn('Rolle'),
-                    'Trophäen': st.column_config.NumberColumn('Trophäen', format="%d"),
+                    'Role': st.column_config.TextColumn('Role'),
+                    'Trophies': st.column_config.NumberColumn('Trophies', format="%d"),
                     'Tag': st.column_config.TextColumn('Tag')
                 },
                 hide_index=True
             )
 
-            # Trophäen-Verteilung als Histogramm
-            st.markdown("### Trophäen-Verteilung")
+            # Trophy distribution as histogram
+            st.markdown("### Trophy Distribution")
             fig = px.histogram(
                 df,
-                x='Trophäen',
+                x='Trophies',
                 nbins=20,
-                title='Verteilung der Mitglieder-Trophäen'
+                title='Distribution of Member Trophies'
             )
             fig.update_layout(
                 showlegend=False,
@@ -646,13 +646,13 @@ class BrawlStarsApp:
             )
             st.plotly_chart(fig, use_container_width=True)
 
-            # Rollen-Verteilung als Pie-Chart
-            st.markdown("### Rollen-Verteilung")
-            role_counts = df['Rolle'].value_counts()
+            # Role distribution as pie chart
+            st.markdown("### Role Distribution")
+            role_counts = df['Role'].value_counts()
             fig_roles = px.pie(
                 values=role_counts.values,
                 names=role_counts.index,
-                title='Verteilung der Club-Rollen'
+                title='Distribution of Club Roles'
             )
             fig_roles.update_layout(height=400)
             st.plotly_chart(fig_roles, use_container_width=True)
