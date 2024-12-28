@@ -47,6 +47,29 @@ class BrawlStarsApp:
 
     def run(self) -> None:
         """Main method to run the app"""
+        # Add centered logo to sidebar with custom CSS
+        st.sidebar.markdown(
+            """
+            <style>
+                [data-testid="stSidebarNav"] {
+                    text-align: center;
+                }
+                [data-testid="stImage"] {
+                    margin-left: auto;
+                    margin-right: auto;
+                    display: block;
+                }
+            </style>
+            """, 
+            unsafe_allow_html=True
+        )
+        
+        st.sidebar.image(
+            "Pictures/Logo Star No Shadow.png",
+            width=100,
+            use_column_width=False  # This ensures the image keeps its specified width
+        )
+        
         selected_page = st.sidebar.radio(
             "Navigation",
             ["Player Comparison", "Clubs", "Brawlers"],
@@ -62,6 +85,13 @@ class BrawlStarsApp:
 
     def _show_player_comparison_page(self) -> None:
         """Shows the player comparison page"""
+        # Add image before the title
+        st.image(
+            "Pictures/PlayerComparison.png",
+            width=375,  # iPhone portrait width
+            use_column_width=False
+        )
+        
         st.title("Brawl Stars Player Comparison")
         
         # Load club information
@@ -567,6 +597,13 @@ class BrawlStarsApp:
 
     def _show_clubs_page(self) -> None:
         """Shows the club analysis page"""
+        # Add the image before the title
+        st.image(
+            "Pictures/Artboard 1.png",
+            width=375,  # iPhone portrait width
+            use_column_width=False
+        )
+        
         st.title("Club Analysis")
 
         # Two tabs for existing clubs and custom club ID
