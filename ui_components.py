@@ -10,8 +10,13 @@ class BrawlStarsUI:
     Handles the rendering of all visual elements.
     """
 
-    def __init__(self):
-        """Initializes the UI component with default colors and styles"""
+    def __init__(self, data_processor):
+        """
+        Initializes the UI component with default colors and styles
+        
+        Args:
+            data_processor: Instance of BrawlStarsDataProcessor
+        """
         self.colors = {
             'primary': '#FF9900',
             'secondary': '#6E44FF',
@@ -24,6 +29,8 @@ class BrawlStarsUI:
             'height': 400,
             'template': 'plotly_dark'
         }
+        
+        self.data_processor = data_processor
 
     def display_player_stats(self, player_data: Dict[str, Any], club_info: Dict[str, Any], column) -> None:
         """
@@ -37,6 +44,9 @@ class BrawlStarsUI:
         with column:
             st.header(f"Statistics: {player_data['name']}")
             
+            # Get highest trophy brawler
+            highest_brawler = self.data_processor.get_highest_trophy_brawler(player_data)
+            
             # Player statistics
             stats = {
                 '🏆 Trophies': player_data['trophies'],
@@ -44,7 +54,8 @@ class BrawlStarsUI:
                 '🎯 3v3 Victories': player_data.get('3vs3Victories', 0),
                 '🎮 Solo Victories': player_data.get('soloVictories', 0),
                 '👥 Duo Victories': player_data.get('duoVictories', 0),
-                '🏅 Level': player_data['expLevel']
+                '🏅 Level': player_data['expLevel'],
+                '👑 Best Brawler': f"{highest_brawler.get('name', '-')} ({highest_brawler.get('trophies', 0)} 🏆)"
             }
 
             # Display stats in columns
@@ -53,7 +64,10 @@ class BrawlStarsUI:
                 with col1:
                     st.write(f"{label}:")
                 with col2:
-                    st.write(f"{value:,}")
+                    if isinstance(value, int):
+                        st.write(f"{value:,}")
+                    else:
+                        st.write(value)
 
             # Club information
             if club_info:

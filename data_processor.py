@@ -307,3 +307,29 @@ class BrawlStarsDataProcessor:
         
         # Sort brawlers by trophies (descending)
         return sorted(formatted_brawlers, key=lambda x: x['Trophies'], reverse=True)
+
+    def get_highest_trophy_brawler(self, player_data: Dict) -> Dict:
+        """
+        Gets the brawler with the highest trophies from a player.
+        
+        Args:
+            player_data (Dict): Player data containing brawler information
+            
+        Returns:
+            Dict: Information about the highest trophy brawler
+        """
+        if not player_data or 'brawlers' not in player_data:
+            return {}
+        
+        # Find brawler with highest trophies
+        highest_brawler = max(player_data['brawlers'], 
+                             key=lambda x: x.get('trophies', 0), 
+                             default={})
+        
+        if highest_brawler:
+            return {
+                'name': highest_brawler.get('name', 'Unknown'),
+                'trophies': highest_brawler.get('trophies', 0)
+            }
+        
+        return {}

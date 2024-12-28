@@ -31,7 +31,7 @@ class BrawlStarsApp:
         self._load_environment()
         self.api_client = BrawlStarsAPI(self.api_key)
         self.data_processor = BrawlStarsDataProcessor()
-        self.ui = BrawlStarsUI()
+        self.ui = BrawlStarsUI(self.data_processor)
 
     def _load_environment(self) -> None:
         """Load environment variables"""
