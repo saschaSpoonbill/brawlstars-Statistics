@@ -405,6 +405,16 @@ class BrawlStarsApp:
         
         self.ui.display_brawler_stats(brawler_stats1, brawler_col1)
         self.ui.display_brawler_stats(brawler_stats2, brawler_col2)
+        
+        # Add detailed brawler information
+        detail_col1, detail_col2 = st.columns(2)
+        
+        # Format and display detailed brawler information
+        brawler_details1 = self.data_processor.format_brawler_details(player1_data)
+        brawler_details2 = self.data_processor.format_brawler_details(player2_data)
+        
+        self.ui.display_brawler_details(brawler_details1, detail_col1)
+        self.ui.display_brawler_details(brawler_details2, detail_col2)
 
         # Display battle logs
         battles1 = self.api_client.get_battle_log(player1_tag)

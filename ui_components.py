@@ -271,3 +271,34 @@ class BrawlStarsUI:
                 st.metric("Total Gears", stats.get('total_gears', 0))
                 st.metric("Total Star Powers", stats.get('total_starpowers', 0))
                 st.metric("Total Gadgets", stats.get('total_gadgets', 0))
+
+    def display_brawler_details(self, brawler_details: List[Dict], column) -> None:
+        """
+        Displays detailed brawler information in a table.
+        
+        Args:
+            brawler_details (List[Dict]): List of formatted brawler details
+            column: Streamlit column object
+        """
+        with column:
+            st.subheader("Detailed Brawler Information")
+            
+            # Convert to DataFrame for better display
+            df = pd.DataFrame(brawler_details)
+            
+            # Configure column display
+            st.dataframe(
+                df,
+                column_config={
+                    'Name': st.column_config.TextColumn('Name', width='medium'),
+                    'Power': st.column_config.NumberColumn('Power', format='%d'),
+                    'Rank': st.column_config.NumberColumn('Rank', format='%d'),
+                    'Trophies': st.column_config.NumberColumn('Trophies', format='%d'),
+                    'Highest Trophies': st.column_config.NumberColumn('Highest', format='%d'),
+                    'Gears': st.column_config.TextColumn('Gears', width='large'),
+                    'Star Powers': st.column_config.TextColumn('Star Powers', width='large'),
+                    'Gadgets': st.column_config.TextColumn('Gadgets', width='large')
+                },
+                hide_index=True,
+                use_container_width=True
+            )

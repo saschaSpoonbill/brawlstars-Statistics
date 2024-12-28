@@ -262,3 +262,48 @@ class BrawlStarsDataProcessor:
             'total_starpowers': total_starpowers,
             'total_gadgets': total_gadgets
         }
+
+    def format_brawler_details(self, player_data: Dict) -> List[Dict]:
+        """
+        Formats detailed brawler information for a player.
+        
+        Args:
+            player_data (Dict): Player data containing brawler information
+            
+        Returns:
+            List[Dict]: List of formatted brawler details
+        """
+        if not player_data or 'brawlers' not in player_data:
+            return []
+        
+        formatted_brawlers = []
+        
+        for brawler in player_data['brawlers']:
+            # Format gear names if present
+            gears = [gear.get('name', 'Unknown') for gear in brawler.get('gears', [])]
+            gear_text = ', '.join(gears) if gears else '-'
+            
+            # Format starpower names if present
+            starpowers = [sp.get('name', 'Unknown') for sp in brawler.get('starPowers', [])]
+            starpower_text = ', '.join(starpowers) if starpowers else '-'
+            
+            # Format gadget names if present
+            gadgets = [gadget.get('name', 'Unknown') for gadget in brawler.get('gadgets', [])]
+            gadget_text = ', '.join(gadgets) if gadgets else '-'
+            
+            # Create formatted brawler entry
+            formatted_brawler = {
+                'Name': brawler.get('name', 'Unknown'),
+                'Power': brawler.get('power', 0),
+                'Rank': brawler.get('rank', 0),
+                'Trophies': brawler.get('trophies', 0),
+                'Highest Trophies': brawler.get('highestTrophies', 0),
+                'Gears': gear_text,
+                'Star Powers': starpower_text,
+                'Gadgets': gadget_text
+            }
+            
+            formatted_brawlers.append(formatted_brawler)
+        
+        # Sort brawlers by trophies (descending)
+        return sorted(formatted_brawlers, key=lambda x: x['Trophies'], reverse=True)
