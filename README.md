@@ -95,6 +95,9 @@ TOGETHER_API_KEY=your_together_api_key       # Get it from: https://www.together
 - Brawl Stars API Key: Visit [developer.brawlstars.com](https://developer.brawlstars.com) and create a developer account
 - Together AI API Key: Sign up at [together.ai](https://www.together.ai/) and generate your API key
 
+### Live Demo
+Try out the application live at [brawlerinsight.com](https://www.brawlerinsight.com/)
+
 ### Running Locally
 ```bash
 streamlit run main.py
