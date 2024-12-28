@@ -49,16 +49,16 @@ class BrawlStarsApp:
         """Main method to run the app"""
         selected_page = st.sidebar.radio(
             "Navigation",
-            ["Player Comparison", "Brawlers", "Clubs"],
+            ["Player Comparison", "Clubs", "Brawlers"],
             index=0
         )
 
         if selected_page == "Player Comparison":
             self._show_player_comparison_page()
-        elif selected_page == "Brawlers":
-            self._show_brawler_page()
-        else:
+        elif selected_page == "Clubs":
             self._show_clubs_page()
+        else:
+            self._show_brawler_page()
 
     def _show_player_comparison_page(self) -> None:
         """Shows the player comparison page"""
@@ -87,23 +87,38 @@ class BrawlStarsApp:
         # Get all brawlers and sort them alphabetically
         brawlers = sorted(brawlers_data.get('items', []), key=lambda x: x.get('name', ''))
         
-        # Create two columns: one for the brawler list and one for details
-        col1, col2 = st.columns([1, 2])
+        # Create a grid layout for brawler selection
+        st.write("### Select Brawler")
         
-        with col1:
-            st.subheader("Select Brawler")
-            # Create a list of brawlers as buttons
-            for brawler in brawlers:
-                if st.button(
-                    brawler['name'],
-                    key=f"brawler_{brawler['id']}",
-                    use_container_width=True
-                ):
-                    st.session_state.selected_brawler = brawler['id']
-                    st.session_state.selected_brawler_name = brawler['name']
+        # Create a search box for brawlers
+        search_term = st.text_input("🔍 Search Brawler", "").lower()
+        
+        # Filter brawlers based on search
+        if search_term:
+            brawlers = [b for b in brawlers if search_term in b['name'].lower()]
+        
+        # Create a grid of brawlers using columns
+        cols_per_row = 6  # Number of brawlers per row
+        
+        for i in range(0, len(brawlers), cols_per_row):
+            cols = st.columns(cols_per_row)
+            for j, col in enumerate(cols):
+                if i + j < len(brawlers):
+                    brawler = brawlers[i + j]
+                    # Create a button with brawler name
+                    if col.button(
+                        brawler['name'],
+                        key=f"brawler_{brawler['id']}",
+                        use_container_width=True
+                    ):
+                        st.session_state.selected_brawler = brawler['id']
+                        st.session_state.selected_brawler_name = brawler['name']
+                        # Scroll to top when a brawler is selected
+                        st.experimental_rerun()
 
-        with col2:
-            if 'selected_brawler' in st.session_state:
+        # Show selected brawler details in an expander
+        if 'selected_brawler' in st.session_state:
+            with st.expander(f"Details for {st.session_state.selected_brawler_name}", expanded=True):
                 self._show_brawler_details(
                     st.session_state.selected_brawler,
                     st.session_state.selected_brawler_name
