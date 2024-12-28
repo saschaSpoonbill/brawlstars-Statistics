@@ -587,6 +587,22 @@ class BrawlStarsApp:
 
         # Club header with basic information
         st.header(club_info['name'])
+        
+        # Find president
+        president = next((member for member in club_info.get('members', []) 
+                         if member['role'].lower() == 'president'), None)
+        president_name = president['name'] if president else "Unknown"
+        
+        # Calculate trophy statistics
+        if club_info.get('members'):
+            member_trophies = [member['trophies'] for member in club_info['members']]
+            min_trophies = min(member_trophies)
+            max_trophies = max(member_trophies)
+            avg_trophies = sum(member_trophies) / len(member_trophies)
+        else:
+            min_trophies = max_trophies = avg_trophies = 0
+        
+        # Display club metrics in two rows
         col1, col2, col3 = st.columns(3)
         with col1:
             st.metric("Trophies", f"{club_info['trophies']:,}")
@@ -594,8 +610,19 @@ class BrawlStarsApp:
             st.metric("Required Trophies", f"{club_info.get('requiredTrophies', 0):,}")
         with col3:
             st.metric("Members", f"{len(club_info.get('members', []))}/30")
+        
+        col1, col2, col3 = st.columns(3)
+        with col1:
+            st.metric("President", president_name)
+        with col2:
+            st.metric("Type", club_info.get('type', 'Unknown').replace('_', ' ').title())
+        with col3:
+            st.metric("Average Trophies", f"{int(avg_trophies):,}")
+        
+        # Trophy range info
+        st.info(f"Trophy Range: {min_trophies:,} - {max_trophies:,} 🏆")
 
-        # Club description
+        # Rest of the club info display remains the same...
         if club_info.get('description'):
             st.markdown("### Description")
             st.write(club_info['description'])
