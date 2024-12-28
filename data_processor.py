@@ -230,27 +230,35 @@ class BrawlStarsDataProcessor:
         Returns:
             Dict: Dictionary containing brawler statistics
         """
-        if 'brawlers' not in player_data:
-            return {
-                'total_brawlers': 0,
-                'high_level_brawlers': 0,
-                'max_level_brawlers': 0,
-                'avg_trophies': 0
-            }
-
-        brawlers = player_data['brawlers']
-        total_brawlers = len(brawlers)
-        total_trophies = sum(b['trophies'] for b in brawlers)
+        if not player_data or 'brawlers' not in player_data:
+            return {}
         
-        # Count brawlers with power 9 or higher
-        high_level_brawlers = sum(1 for b in brawlers if b.get('power', 0) >= 9)
+        total_brawlers = len(player_data['brawlers'])
+        high_level_brawlers = 0  # Power 9+
+        max_level_brawlers = 0   # Power 11
+        total_gears = 0
+        total_starpowers = 0
+        total_gadgets = 0
         
-        # Count brawlers with power 11
-        max_level_brawlers = sum(1 for b in brawlers if b.get('power', 0) == 11)
+        for brawler in player_data['brawlers']:
+            if brawler['power'] >= 9:
+                high_level_brawlers += 1
+            if brawler['power'] == 11:
+                max_level_brawlers += 1
+            
+            # Count gears, starpowers and gadgets
+            if 'gears' in brawler:
+                total_gears += len(brawler['gears'])
+            if 'starPowers' in brawler:
+                total_starpowers += len(brawler['starPowers'])
+            if 'gadgets' in brawler:
+                total_gadgets += len(brawler['gadgets'])
         
         return {
             'total_brawlers': total_brawlers,
             'high_level_brawlers': high_level_brawlers,
             'max_level_brawlers': max_level_brawlers,
-            'avg_trophies': total_trophies / total_brawlers if total_brawlers > 0 else 0
+            'total_gears': total_gears,
+            'total_starpowers': total_starpowers,
+            'total_gadgets': total_gadgets
         }

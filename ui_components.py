@@ -254,16 +254,20 @@ class BrawlStarsUI:
         
         st.plotly_chart(fig, use_container_width=True)
 
-    def display_brawler_stats(self, brawler_stats: Dict, column) -> None:
-        """
-        Shows brawler statistics in a column.
-
-        Args:
-            brawler_stats (Dict): Brawler statistics
-            column: Streamlit column object
-        """
+    def display_brawler_stats(self, stats: Dict, column) -> None:
+        """Displays brawler statistics in the given column"""
         with column:
-            st.metric("Number of Brawlers", brawler_stats['total_brawlers'])
-            st.metric("≥ Power 9", brawler_stats['high_level_brawlers'])
-            st.metric("Power 11", brawler_stats['max_level_brawlers'])
-            st.metric("Avg. Trophies", f"{brawler_stats['avg_trophies']:.1f}")
+            st.subheader("Brawler Statistics")
+            
+            # Create three rows of metrics
+            col1, col2 = st.columns(2)
+            
+            with col1:
+                st.metric("Total Brawlers", stats.get('total_brawlers', 0))
+                st.metric("Power 9+ Brawlers", stats.get('high_level_brawlers', 0))
+                st.metric("Power 11 Brawlers", stats.get('max_level_brawlers', 0))
+            
+            with col2:
+                st.metric("Total Gears", stats.get('total_gears', 0))
+                st.metric("Total Star Powers", stats.get('total_starpowers', 0))
+                st.metric("Total Gadgets", stats.get('total_gadgets', 0))
