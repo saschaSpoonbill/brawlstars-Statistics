@@ -19,10 +19,11 @@ logging.basicConfig(
 class BrawlStarsApp:
     # Predefined club tags (starting with '#')
     CLUB_TAGS = {
-        "Spike": "#2YJQ8LRCG",
+        "Venom Vipers": "#JOLVRPRP",
         "grand": "#CV2LQLQU",
-        "MA NAJJACI SMOO": "#2UU9UlJUR",
         "i pro": "#GRP8LQJ8",
+        "MA NAJJACI SMOO": "#2UU9UlJUR",
+        "Spike": "#2YJQ8LRCG"
     }
 
     def __init__(self):
@@ -206,7 +207,7 @@ class BrawlStarsApp:
                     "Select Club (Player 1)",
                     options=list(club_info.keys()),
                     key="club1",
-                    index=list(club_info.keys()).index("Spike")
+                    index=list(club_info.keys()).index("Venom Vipers")
                 )
                 if club1:
                     members1 = self.api_client.get_club_members(self.CLUB_TAGS[club1])
@@ -249,7 +250,7 @@ class BrawlStarsApp:
                     "Select Club (Player 2)",
                     options=list(club_info.keys()),
                     key="club2",
-                    index=list(club_info.keys()).index("Spike")
+                    index=list(club_info.keys()).index("Venom Vipers")
                 )
                 if club2:
                     members2 = self.api_client.get_club_members(self.CLUB_TAGS[club2])
@@ -558,7 +559,7 @@ class BrawlStarsApp:
         with tab2:
             custom_tag = st.text_input(
                 "Enter Club Tag (with #)",
-                placeholder="#2YJQ8LRCG"
+                placeholder="#JOLVRPRP"
             )
             if custom_tag:
                 if not custom_tag.startswith('#'):
