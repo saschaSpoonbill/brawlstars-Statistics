@@ -87,9 +87,13 @@ pip install -r requirements.txt
 
 4. Create `.env` file:
 ```
-BRAWLSTARS_API_KEY=your_brawlstars_api_key
-TOGETHER_API_KEY=your_together_api_key
+BRAWLSTARS_API_KEY=your_brawlstars_api_key  # Get it from: https://developer.brawlstars.com
+TOGETHER_API_KEY=your_together_api_key       # Get it from: https://www.together.ai/
 ```
+
+**How to obtain API Keys:**
+- Brawl Stars API Key: Visit [developer.brawlstars.com](https://developer.brawlstars.com) and create a developer account
+- Together AI API Key: Sign up at [together.ai](https://www.together.ai/) and generate your API key
 
 ### Running Locally
 ```bash
@@ -101,7 +105,8 @@ The app will be available at:
 - Network: http://your-ip:8501
 
 ## Author
-Sascha / saschaSpoonbill (supported by Cursor)
+Sascha / saschaSpoonbill (supported by Cursor)  
+GitHub: [@saschaSpoonbill](https://github.com/saschaSpoonbill)
 
 ## License
 MIT License
