@@ -48,6 +48,11 @@ A Streamlit application for comparing Brawl Stars players with advanced statisti
   - Available star powers
   - Available gadgets
   - Global rankings
+- Detailed strategy guides and tips:
+  - Game mode specific recommendations and best maps
+  - Optimal builds including Star Powers, Gadgets, and Gear combinations
+  - Advanced gameplay strategies and tactics
+  - Counter-play suggestions and synergies
 
 ### AI Analysis
 - AI-powered comparison of two players
