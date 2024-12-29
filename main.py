@@ -739,8 +739,9 @@ class BrawlStarsApp:
         - Recent Win Rate: {battle_stats2.get('win_rate', 0):.1f}%
         - Star Player Count: {star_count2}
 
-        Create a concise analysis (4-6 sentences) comparing these players.
+        Create a concise analysis, in maximum 4-6 sentences, comparing these players.
         Highlight key differences and mention who is stronger in which areas.
+        Just one paragraph in response.
         Focus on the most significant stats that show the skill and progress level of each player.
         """
 
@@ -749,10 +750,10 @@ class BrawlStarsApp:
             response = together.Complete.create(
                 prompt=f"<human>You are a Brawl Stars expert. {prompt}</human><assistant>",
                 model="mistralai/Mixtral-8x7B-Instruct-v0.1",
+                temperature=0.3,
                 max_tokens=300,
-                temperature=0.7,
-                top_k=50,
-                top_p=0.7,
+                top_k=40,
+                top_p=0.5,
                 repetition_penalty=1.1
             )
             
