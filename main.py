@@ -121,7 +121,7 @@ class BrawlStarsApp:
                         st.session_state.selected_brawler = brawler['id']
                         st.session_state.selected_brawler_name = brawler['name']
                         # Scroll to top when a brawler is selected
-                        st.experimental_rerun()
+                        st.rerun()
 
         # Show selected brawler details in an expander
         if 'selected_brawler' in st.session_state:
