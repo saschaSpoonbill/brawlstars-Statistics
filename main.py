@@ -6,6 +6,7 @@ import pandas as pd
 import logging
 import plotly.express as px
 import together
+import json
 
 # Set page config must be the first Streamlit command
 st.set_page_config(
@@ -84,6 +85,12 @@ class BrawlStarsApp:
         """Shows the brawler analysis page"""
         st.title("Brawler Analysis")
         
+        # Initialize session state variables if they don't exist
+        if 'selected_brawler' not in st.session_state:
+            st.session_state.selected_brawler = None
+        if 'selected_brawler_name' not in st.session_state:
+            st.session_state.selected_brawler_name = None
+        
         # Load all brawlers
         brawlers_data = self.api_client.get_brawlers()
         
@@ -124,12 +131,37 @@ class BrawlStarsApp:
                         st.rerun()
 
         # Show selected brawler details in an expander
-        if 'selected_brawler' in st.session_state:
+        if 'selected_brawler' in st.session_state and st.session_state.selected_brawler_name:
             with st.expander(f"Details for {st.session_state.selected_brawler_name}", expanded=True):
                 self._show_brawler_details(
                     st.session_state.selected_brawler,
                     st.session_state.selected_brawler_name
                 )
+
+        if 'selected_brawler_name' in st.session_state and st.session_state.selected_brawler_name:
+            # Lade Tips für den ausgewählten Brawler
+            brawler_tips = self._load_brawler_tips(st.session_state.selected_brawler_name)
+            
+            if brawler_tips:
+                st.write("---")
+                st.header(f"Tips for {st.session_state.selected_brawler_name}")
+                
+                # Game Modes and Maps
+                with st.expander("Game Modes and Maps", expanded=True):
+                    for tip in brawler_tips.get('GameModesAndMaps', []):
+                        st.write(f"• {tip}")
+                
+                # Recommended Build
+                with st.expander("Recommended Build", expanded=True):
+                    for tip in brawler_tips.get('RecommendedBuild', []):
+                        st.write(f"• {tip}")
+                
+                # Strategies and Other
+                with st.expander("Strategies and Other", expanded=True):
+                    for tip in brawler_tips.get('StrategiesAndOther', []):
+                        st.write(f"• {tip}")
+            else:
+                st.info(f"No tips available for {st.session_state.selected_brawler_name}")
 
     def _show_brawler_details(self, brawler_id: str, brawler_name: str) -> None:
         """Shows detailed information for a selected brawler"""
@@ -776,6 +808,22 @@ class BrawlStarsApp:
             error_msg = f"Error generating AI analysis: {str(e)}"
             logging.error(error_msg)
             return error_msg
+
+    def _load_brawler_tips(self, brawler_name: str) -> Dict:
+        """Lädt die Tips für einen bestimmten Brawler aus der JSON-Datei"""
+        try:
+            with open('BrawlerTips.json', 'r', encoding='utf-8') as f:
+                tips_data = json.load(f)
+                
+            # Suche den Brawler in den Tips
+            for brawler in tips_data['brawlers']:
+                if brawler['brawlerName'] == brawler_name:
+                    return brawler['tips']
+                    
+            return {} # Leeres Dict falls Brawler nicht gefunden
+        except Exception as e:
+            logging.error(f"Error loading brawler tips: {e}")
+            return {}
 
 def main():
     """Hauptfunktion zum Starten der App"""
