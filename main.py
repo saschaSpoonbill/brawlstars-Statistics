@@ -7,6 +7,13 @@ import logging
 import plotly.express as px
 import together
 
+# Set page config must be the first Streamlit command
+st.set_page_config(
+    page_title="BrawlerInsight",
+    page_icon="🏆",  # Optional: fügt ein Favicon/Icon hinzu
+    layout="wide"
+)
+
 from api_client import BrawlStarsAPI
 from data_processor import BrawlStarsDataProcessor
 from ui_components import BrawlStarsUI
