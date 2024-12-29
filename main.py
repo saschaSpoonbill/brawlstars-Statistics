@@ -815,9 +815,9 @@ class BrawlStarsApp:
             with open('BrawlerTips.json', 'r', encoding='utf-8') as f:
                 tips_data = json.load(f)
                 
-            # Suche den Brawler in den Tips
+            # Suche den Brawler in den Tips (case-insensitive)
             for brawler in tips_data['brawlers']:
-                if brawler['brawlerName'] == brawler_name:
+                if brawler['brawlerName'].lower() == brawler_name.lower():
                     return brawler['tips']
                     
             return {} # Leeres Dict falls Brawler nicht gefunden
