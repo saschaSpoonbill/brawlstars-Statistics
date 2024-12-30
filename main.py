@@ -55,10 +55,28 @@ class BrawlStarsApp:
 
     def run(self) -> None:
         """Main method to run the app"""
+        
+        # Sidebar navigation
         selected_page = st.sidebar.radio(
             "Navigation",
             ["Player Comparison", "Clubs", "Brawlers"],
             index=0
+        )
+        
+        # Add Buy Me a Coffee section at bottom of sidebar
+        st.sidebar.markdown("---")
+        st.sidebar.markdown(
+            """
+            <div style='text-align: center; color: #888;'>
+                <p>Help keep this service running!</p>
+                <a href='https://buymeacoffee.com/brawlerinsight' target='_blank'>
+                    <img src='https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png' 
+                         alt='Buy Me A Coffee' 
+                         style='height: 40px; width: 160px;'>
+                </a>
+            </div>
+            """,
+            unsafe_allow_html=True
         )
 
         if selected_page == "Player Comparison":
@@ -162,6 +180,17 @@ class BrawlStarsApp:
                         st.write(f"• {tip}")
             else:
                 st.info(f"No tips available for {st.session_state.selected_brawler_name}")
+
+        # Nach der AI-Analyse Anzeige
+        st.markdown(
+            """
+            <div style='text-align: right; font-size: 0.8em; color: #888;'>
+                AI analysis powered by Together AI. 
+                <a href='https://buymeacoffee.com/brawlerinsight' target='_blank'>Support this feature</a>
+            </div>
+            """,
+            unsafe_allow_html=True
+        )
 
     def _show_brawler_details(self, brawler_id: str, brawler_name: str) -> None:
         """Shows detailed information for a selected brawler"""
@@ -508,6 +537,17 @@ class BrawlStarsApp:
                     """, unsafe_allow_html=True)
                     
                     st.markdown(f'<div class="analysis-container">{analysis}</div>', unsafe_allow_html=True)
+
+        # Add Buy Me a Coffee info after AI analysis
+        st.markdown(
+            """
+            <div style='text-align: right; font-size: 0.8em; color: #888;'>
+                AI analysis powered by Together AI. 
+                <a href='https://buymeacoffee.com/brawlerinsight' target='_blank'>Support this feature</a>
+            </div>
+            """,
+            unsafe_allow_html=True
+        )
 
     def _display_battle_logs(self, battles1: Dict, battles2: Dict, 
                             player1_tag: str, player2_tag: str) -> None:
