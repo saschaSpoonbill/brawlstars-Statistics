@@ -125,5 +125,3 @@ GitHub: [@saschaSpoonbill](https://github.com/saschaSpoonbill)
 
 ## License
 MIT License
-
-Google Analytics: G-NCG7739DG5
