@@ -97,6 +97,12 @@ BRAWLSTARS_API_KEY=your_brawlstars_api_key  # Get it from: https://developer.bra
 TOGETHER_API_KEY=your_together_api_key       # Get it from: https://www.together.ai/
 ```
 
+5. Google Analytics Setup:
+  - The app includes Google Analytics tracking (ID: G-NCG7739DG5)
+  - To use your own tracking:
+    - Replace the ID in main.py with your own Google Analytics ID
+    - Or remove the inject_ga() function and its call to disable tracking
+
 **How to obtain API Keys:**
 - Brawl Stars API Key: Visit [developer.brawlstars.com](https://developer.brawlstars.com) and create a developer account
 - Together AI API Key: Sign up at [together.ai](https://www.together.ai/) and generate your API key
@@ -119,3 +125,5 @@ GitHub: [@saschaSpoonbill](https://github.com/saschaSpoonbill)
 
 ## License
 MIT License
+
+Google Analytics: G-NCG7739DG5
