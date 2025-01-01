@@ -667,7 +667,24 @@ class BrawlStarsApp:
                 st.metric("Win Rate", f"{stats1['win_rate']:.1f}%")
                 st.metric("Star Player", f"{star_count1}x ⭐")
                 
-                st.dataframe(pd.DataFrame(formatted_battles1))
+                st.dataframe(
+                    pd.DataFrame(formatted_battles1),
+                    column_config={
+                        'Time': st.column_config.TextColumn('Time', width='medium'),
+                        'Brawler': st.column_config.TextColumn('Brawler', width='medium'),
+                        'Power': st.column_config.NumberColumn('Power', width='small'),
+                        'Trophies': st.column_config.NumberColumn('Trophies', width='small'),
+                        'Mode': st.column_config.TextColumn('Mode', width='medium'),
+                        'Map': st.column_config.TextColumn('Map', width='medium'),
+                        'Type': st.column_config.TextColumn('Type', width='small'),
+                        'Result': st.column_config.TextColumn('Result', width='small'),
+                        'Duration': st.column_config.TextColumn('Duration', width='small'),
+                        'Trophy Change': st.column_config.NumberColumn('Trophy Δ', width='small'),
+                        'Rank': st.column_config.TextColumn('Rank', width='small'),
+                        'Star Player': st.column_config.TextColumn('★', width='small'),
+                    },
+                    hide_index=True
+                )
 
         with col2:
             formatted_battles2, star_count2 = self.data_processor.format_battle_log(

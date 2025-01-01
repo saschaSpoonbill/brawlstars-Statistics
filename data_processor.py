@@ -25,7 +25,7 @@ class BrawlStarsDataProcessor:
             }
 
         total_games = len(battles)
-        victories = sum(1 for b in battles if b['Result'] == 'Victory')
+        victories = sum(1 for b in battles if b['Result'] == 'Victory' or b['Rank'] == '#1')
         win_rate = (victories / total_games * 100) if total_games > 0 else 0
 
         return {
@@ -34,33 +34,71 @@ class BrawlStarsDataProcessor:
             'win_rate': win_rate
         }
 
-    def format_battle_log(self, battles: Dict[str, Any], player_tag: str) -> Tuple[List[Dict], int]:
+    def format_battle_log(self, battles: Dict, player_tag: str) -> Tuple[List[Dict], int]:
         """
-        Formats the battle log and counts star player awards.
-
+        Formats the battle log data into a readable format.
+        
         Args:
-            battles (Dict[str, Any]): Raw battle log data
-            player_tag (str): Player tag for star player comparison
-
+            battles (Dict): Raw battle log data
+            player_tag (str): Player's tag to identify their data
+            
         Returns:
-            Tuple[List[Dict], int]: (Formatted battles, Number of star player awards)
+            Tuple[List[Dict], int]: Formatted battles and star player count
         """
-        if not battles or 'items' not in battles:
-            return [], 0
-
         formatted_battles = []
         star_player_count = 0
-
-        for battle in battles['items'][:20]:  # Limited to last 20 games
-            try:
-                battle_info = self._format_single_battle(battle, player_tag)
-                if battle_info.get('Star Player'):
-                    star_player_count += 1
-                formatted_battles.append(battle_info)
-            except Exception as e:
-                print(f"Error processing battle: {e}")
-                continue
-
+        
+        for battle in battles.get('items', []):
+            # Find player's data in the battle
+            player_data = None
+            brawler_info = None
+            
+            # Handle duels mode differently
+            if battle['battle'].get('mode') == 'duels':
+                for player in battle['battle'].get('players', []):
+                    if player['tag'] == player_tag:
+                        brawler_names = [b['name'].title() for b in player['brawlers']]
+                        brawler_info = {
+                            'name': ' → '.join(brawler_names),
+                            'power': sum(b['power'] for b in player['brawlers']),
+                            'trophies': sum(b['trophies'] for b in player['brawlers'])
+                        }
+                        break
+            # Handle regular modes
+            elif 'teams' in battle['battle']:
+                for team in battle['battle']['teams']:
+                    for player in team:
+                        if player['tag'] == player_tag:
+                            player_data = player
+                            break
+                    if player_data:
+                        break
+            
+            # Format battle data
+            battle_info = {
+                'Time': battle['battleTime'].replace('T', ' ').replace('.000Z', ''),
+                'Brawler': (brawler_info['name'] if brawler_info else 
+                           player_data['brawler']['name'].title() if player_data else 'Unknown'),
+                'Power': (brawler_info['power'] if brawler_info else 
+                          player_data['brawler']['power'] if player_data else 0),
+                'Trophies': (brawler_info['trophies'] if brawler_info else 
+                            player_data['brawler']['trophies'] if player_data else 0),
+                'Mode': battle['battle']['mode'].title(),
+                'Map': battle['event'].get('map', 'Unknown'),
+                'Type': battle['battle'].get('type', 'Unknown').title(),
+                'Result': battle['battle'].get('result', '').title(),
+                'Duration': f"{battle['battle'].get('duration', 0)}s",
+                'Trophy Change': battle['battle'].get('trophyChange', 0),
+                'Rank': f"#{battle['battle']['rank']}" if 'rank' in battle['battle'] else '',
+                'Star Player': '⭐' if battle['battle'].get('starPlayer', {}).get('tag') == player_tag else ''
+            }
+            
+            # Count star player achievements
+            if battle['battle'].get('starPlayer', {}).get('tag') == player_tag:
+                star_player_count += 1
+            
+            formatted_battles.append(battle_info)
+        
         return formatted_battles, star_player_count
 
     @staticmethod
