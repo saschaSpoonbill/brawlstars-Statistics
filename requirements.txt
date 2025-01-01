@@ -5,3 +5,4 @@ pandas==2.1.0
 plotly==5.17.0
 together==0.2.5
 numpy>=1.24.0
+beautifulsoup4==4.12.2
