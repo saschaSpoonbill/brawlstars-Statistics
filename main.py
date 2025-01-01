@@ -2,6 +2,7 @@ import os
 from typing import Dict, Tuple, Optional
 from dotenv import load_dotenv
 import streamlit as st
+import streamlit.components.v1 as components
 import pandas as pd
 import logging
 import plotly.express as px
@@ -14,6 +15,22 @@ st.set_page_config(
     page_icon="🏆",  # Optional: fügt ein Favicon/Icon hinzu
     layout="wide"
 )
+
+# Google Analytics Code
+GA_CODE = """
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-NCG7739DG5"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-NCG7739DG5');
+</script>
+"""
+
+# Inject Google Analytics
+components.html(GA_CODE, height=0)
 
 from api_client import BrawlStarsAPI
 from data_processor import BrawlStarsDataProcessor

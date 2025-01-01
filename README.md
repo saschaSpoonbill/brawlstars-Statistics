@@ -71,6 +71,7 @@ A Streamlit application for comparing Brawl Stars players with advanced statisti
 - Streamlit
 - Together AI API key
 - Brawl Stars API key
+- Google Analytics tracking enabled
 
 ### Installation
 
@@ -118,4 +119,3 @@ GitHub: [@saschaSpoonbill](https://github.com/saschaSpoonbill)
 
 ## License
 MIT License
-
