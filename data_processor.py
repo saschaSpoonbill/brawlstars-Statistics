@@ -9,13 +9,10 @@ class BrawlStarsDataProcessor:
 
     def calculate_battle_statistics(self, battles: List[Dict]) -> Dict[str, Any]:
         """
-        Calculates statistics from battle log data.
-
-        Args:
-            battles (List[Dict]): List of formatted battles
-
-        Returns:
-            Dict[str, Any]: Calculated statistics
+        Calculates statistics from battle log data according to Brawl Stars victory rules:
+        - Solo Showdown: Rank 1-4 counts as victory
+        - Duo Showdown: Rank 1-2 counts as victory
+        - Other modes: Result 'victory' counts as victory
         """
         if not battles:
             return {
@@ -25,7 +22,7 @@ class BrawlStarsDataProcessor:
             }
 
         total_games = len(battles)
-        victories = sum(1 for b in battles if b['Result'] == 'Victory' or b['Rank'] == '#1')
+        victories = sum(1 for b in battles if self._is_victory(b))
         win_rate = (victories / total_games * 100) if total_games > 0 else 0
 
         return {
@@ -33,6 +30,31 @@ class BrawlStarsDataProcessor:
             'victories': victories,
             'win_rate': win_rate
         }
+
+    def _is_victory(self, battle: Dict) -> bool:
+        """
+        Determines if a battle counts as victory according to Brawl Stars rules.
+        
+        Args:
+            battle (Dict): Battle data
+            
+        Returns:
+            bool: True if battle counts as victory
+        """
+        mode = battle['Mode'].lower()
+        
+        # Solo Showdown: Rank 1-4 counts as victory
+        if mode == 'soloshowdown' and battle['Rank']:
+            rank = int(battle['Rank'].replace('#', ''))
+            return rank <= 4
+            
+        # Duo Showdown: Rank 1-2 counts as victory
+        if mode == 'duoshowdown' and battle['Rank']:
+            rank = int(battle['Rank'].replace('#', ''))
+            return rank <= 2
+            
+        # Other modes: Check for 'victory' in result
+        return battle['Result'].lower() == 'victory'
 
     def format_battle_log(self, battles: Dict, player_tag: str) -> Tuple[List[Dict], int]:
         """
