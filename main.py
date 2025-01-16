@@ -11,6 +11,7 @@ import json
 import pathlib
 from bs4 import BeautifulSoup
 import shutil
+import plotly.graph_objects as go
 
 # Set page config must be the first Streamlit command
 st.set_page_config(
@@ -92,6 +93,12 @@ class BrawlStarsApp:
 
     def run(self) -> None:
         """Main method to run the app"""
+        # Get current page from URL parameters using the new method
+        current_page = st.query_params.get("page", "main")
+        
+        if current_page == "extended_stats":
+            self._show_extended_stats_page()
+            return
         
         # Sidebar navigation
         selected_page = st.sidebar.radio(
@@ -667,6 +674,19 @@ class BrawlStarsApp:
                 st.metric("Win Rate", f"{stats1['win_rate']:.1f}%")
                 st.metric("Star Player", f"{star_count1}x ⭐")
                 
+                # Show link to extended statistics if available
+                if self.data_processor.has_extended_statistics(player1_tag):
+                    st.markdown(
+                        f"""
+                        <div style='text-align: center; padding: 10px;'>
+                            <a href="?page=extended_stats&player_tag={player1_tag.replace('#', '%23')}" target="_self">
+                                📊 Advanced Battle Statistics available
+                            </a>
+                        </div>
+                        """,
+                        unsafe_allow_html=True
+                    )
+                
                 st.dataframe(
                     pd.DataFrame(formatted_battles1),
                     column_config={
@@ -695,6 +715,19 @@ class BrawlStarsApp:
                 st.metric("Victories", f"{stats2['victories']}/{stats2['total_games']}")
                 st.metric("Win Rate", f"{stats2['win_rate']:.1f}%")
                 st.metric("Star Player", f"{star_count2}x ⭐")
+                
+                # Show link to extended statistics if available
+                if self.data_processor.has_extended_statistics(player2_tag):
+                    st.markdown(
+                        f"""
+                        <div style='text-align: center; padding: 10px;'>
+                            <a href="?page=extended_stats&player_tag={player2_tag.replace('#', '%23')}" target="_self">
+                                📊 Advanced Battle Statistics available
+                            </a>
+                        </div>
+                        """,
+                        unsafe_allow_html=True
+                    )
                 
                 st.dataframe(pd.DataFrame(formatted_battles2))
 
@@ -918,6 +951,177 @@ class BrawlStarsApp:
         except Exception as e:
             logging.error(f"Error loading brawler tips: {e}")
             return {}
+
+    def _show_extended_stats_page(self) -> None:
+        """Shows the extended statistics page"""
+        player_tag = st.query_params.get("player_tag")
+        
+        if not player_tag:
+            st.error("No player selected")
+            return
+            
+        # Convert URL-encoded player tag back to normal format
+        if not player_tag.startswith('#'):
+            player_tag = f"#{player_tag.replace('%23', '')}"
+            
+        player_name = self.data_processor.PLAYERS_WITH_EXTENDED_STATS.get(player_tag, "Unknown")
+        st.title(f"Advanced Statistics: {player_name}")
+        
+        # Date Range Selection
+        st.write("### 📅 Select Date Range")
+        col1, col2 = st.columns(2)
+        with col1:
+            start_date = st.date_input(
+                "Start Date",
+                value=None,
+                format="YYYY-MM-DD"
+            )
+        with col2:
+            end_date = st.date_input(
+                "End Date",
+                value=None,
+                format="YYYY-MM-DD"
+            )
+            
+        # Convert dates to ISO format if selected
+        start_datetime = f"{start_date}T00:00:00" if start_date else None
+        end_datetime = f"{end_date}T23:59:59" if end_date else None
+        
+        # Fetch and display extended statistics
+        stats = self.data_processor.get_extended_statistics(
+            player_tag,
+            start_date=start_datetime,
+            end_date=end_datetime
+        )
+        if stats:
+            # Time Range
+            st.write("### 📅 Time Range")
+            col1, col2 = st.columns(2)
+            with col1:
+                st.metric("First Battle", stats.get("first_battle", "Unknown"))
+            with col2:
+                st.metric("Last Battle", stats.get("last_battle", "Unknown"))
+            
+            st.markdown("---")  # Trennlinie
+            
+            # Battle Statistics
+            st.write("### 🎮 Battle Statistics")
+            col1, col2, col3 = st.columns(3)
+            with col1:
+                st.metric("Total Battles", f"{stats.get('total_battles', 0):,}")
+            with col2:
+                total_victories = int(stats.get('total_battles', 0) * stats.get('win_rate', 0) / 100)
+                st.metric("Total Victories", f"{total_victories:,}")
+            with col3:
+                st.metric("Win Rate", f"{stats.get('win_rate', 0):.1f}%")
+            
+            st.markdown("---")  # Trennlinie
+            
+            # Daily Averages
+            st.write("### 📈 Daily Averages")
+            col1, col2, col3 = st.columns(3)
+            with col1:
+                st.metric("Battles/Day", f"{stats.get('avg_battles_per_day', 0):.1f}")
+            with col2:
+                st.metric("Victories/Day", f"{stats.get('avg_victories_per_day', 0):.1f}")
+            with col3:
+                st.metric("Trophies/Day", f"{stats.get('avg_trophies_per_day', 0):.1f}")
+                
+            st.markdown("---")  # Trennlinie
+            
+            # Trophy Progress Chart
+            st.write("### 🏆 Trophy Progress")
+            progress_data = self.data_processor.get_trophy_progress(
+                player_tag,
+                start_date=start_datetime,
+                end_date=end_datetime
+            )
+            
+            if progress_data and 'daily_progress' in progress_data:
+                # Convert data to DataFrame
+                df = pd.DataFrame(progress_data['daily_progress'])
+                df['date'] = pd.to_datetime(df['date']).dt.date
+                
+                # Calculate cumulative trophy progress
+                df['cumulative_trophies'] = df['trophy_change'].cumsum()
+                
+                # Create cumulative trophy progress chart
+                st.line_chart(
+                    df,
+                    x='date',
+                    y='cumulative_trophies',
+                    height=400
+                )
+                
+                # Show total progress
+                st.metric(
+                    "Total Trophy Progress",
+                    f"{progress_data.get('total_trophy_change', 0):+,}"
+                )
+        else:
+            st.error("Could not load extended statistics")
+
+        st.markdown("---")  # Trennlinie
+        
+        # Brawler Statistics
+        st.write("### 🤖 Brawler Statistics")
+        brawler_data = self.data_processor.get_brawler_statistics(
+            player_tag,
+            start_date=start_datetime,
+            end_date=end_datetime
+        )
+        
+        if brawler_data and 'brawler_statistics' in brawler_data:
+            # Convert to DataFrame and sort by battles
+            df = pd.DataFrame(brawler_data['brawler_statistics'])
+            df = df.sort_values('battles', ascending=False)
+            
+            # Display as interactive table
+            st.dataframe(
+                df,
+                column_config={
+                    "brawler_name": st.column_config.TextColumn("Brawler", width="medium"),
+                    "battles": st.column_config.NumberColumn("Battles", width="small"),
+                    "victories": st.column_config.NumberColumn("Victories", width="small"),
+                    "trophy_change": st.column_config.NumberColumn("Trophy Δ", width="small"),
+                    "win_rate": st.column_config.NumberColumn("Win Rate", width="small", format="%.1f%%")
+                },
+                hide_index=True,
+                use_container_width=True
+            )
+            
+            # Add scatter plot for Brawler Performance
+            st.write("#### Brawler Performance Analysis")
+            fig = px.scatter(
+                df,
+                x='battles',
+                y='win_rate',
+                color='trophy_change',
+                size='victories',
+                hover_name='brawler_name',
+                hover_data={
+                    'brawler_name': False,  # Hide brawler_name (shown in hover_name)
+                    'battles': True,
+                    'win_rate': ':.1f',
+                    'trophy_change': True,
+                    'victories': True
+                },
+                height=400,
+                labels={
+                    'battles': 'Total Battles',
+                    'win_rate': 'Win Rate (%)',
+                    'trophy_change': 'Trophy Change',
+                    'victories': 'Victories'
+                }
+            )
+            
+            # Update layout for better appearance
+            fig.update_layout(
+                plot_bgcolor='rgba(0,0,0,0)',
+                hoverlabel=dict(bgcolor="white", font_size=14)
+            )
+            
+            st.plotly_chart(fig, use_container_width=True)
 
 def main():
     """Hauptfunktion zum Starten der App"""

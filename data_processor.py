@@ -1,11 +1,23 @@
 from typing import Dict, List, Tuple, Any
 from datetime import datetime
 import pandas as pd
+import requests
+import logging
 
 class BrawlStarsDataProcessor:
     """
     Processes and formats data from the Brawl Stars API.
     """
+
+    # Liste der Spieler mit erweiterten Statistiken
+    PLAYERS_WITH_EXTENDED_STATS = {
+        "#2G9LP20YV0": "Spoony",
+        "#2GY9GJPU8Y": "Hydropi",
+        "#PCVU20QJ": "NGÉ | Salii",
+        "#89QUPCRP2": "bеи🐊",
+        "#JCGUVLQJV": "Legoleon",
+        "#L00CUG8Q0": "dami🧸🥀"
+    }
 
     def calculate_battle_statistics(self, battles: List[Dict]) -> Dict[str, Any]:
         """
@@ -393,3 +405,95 @@ class BrawlStarsDataProcessor:
             }
         
         return {}
+
+    def has_extended_statistics(self, player_tag: str) -> bool:
+        """Checks if extended statistics are available for this player"""
+        return player_tag in self.PLAYERS_WITH_EXTENDED_STATS
+
+    def get_extended_statistics(self, player_tag: str, start_date: str = None, end_date: str = None) -> Dict:
+        """
+        Fetches extended statistics from custom API
+        
+        Args:
+            player_tag (str): Player tag
+            start_date (str, optional): Start date in ISO format
+            end_date (str, optional): End date in ISO format
+        """
+        try:
+            params = {"player_tag": player_tag}
+            if start_date:
+                params["start_date"] = start_date
+            if end_date:
+                params["end_date"] = end_date
+                
+            response = requests.get(
+                f"http://13.49.97.84:8000/battle-statistics",
+                params=params
+            )
+            response.raise_for_status()
+            data = response.json()
+            logging.info(f"API Response: {data}")
+            return {
+                "first_battle": data.get("first_battle", "").replace("T", " ").replace("Z", ""),
+                "last_battle": data.get("last_battle", "").replace("T", " ").replace("Z", ""),
+                "total_battles": data.get("total_battles", 0),
+                "avg_battles_per_day": data.get("avg_battles_per_day", 0),
+                "avg_trophies_per_day": data.get("avg_trophies_per_day", 0),
+                "avg_victories_per_day": data.get("avg_victories_per_day", 0),
+                "win_rate": data.get("win_rate", 0)
+            }
+        except Exception as e:
+            logging.error(f"Error fetching extended statistics: {e}")
+            return {}
+
+    def get_trophy_progress(self, player_tag: str, start_date: str = None, end_date: str = None) -> Dict:
+        """
+        Fetches trophy progress data from custom API
+        
+        Args:
+            player_tag (str): Player tag
+            start_date (str, optional): Start date in ISO format
+            end_date (str, optional): End date in ISO format
+        """
+        try:
+            params = {"player_tag": player_tag}
+            if start_date:
+                params["start_date"] = start_date
+            if end_date:
+                params["end_date"] = end_date
+                
+            response = requests.get(
+                f"http://13.49.97.84:8000/trophy-progress",
+                params=params
+            )
+            response.raise_for_status()
+            return response.json()
+        except Exception as e:
+            logging.error(f"Error fetching trophy progress: {e}")
+            return {}
+
+    def get_brawler_statistics(self, player_tag: str, start_date: str = None, end_date: str = None) -> Dict:
+        """
+        Fetches brawler statistics from custom API
+        
+        Args:
+            player_tag (str): Player tag
+            start_date (str, optional): Start date in ISO format
+            end_date (str, optional): End date in ISO format
+        """
+        try:
+            params = {"player_tag": player_tag}
+            if start_date:
+                params["start_date"] = start_date
+            if end_date:
+                params["end_date"] = end_date
+                
+            response = requests.get(
+                f"http://13.49.97.84:8000/brawler-statistics",
+                params=params
+            )
+            response.raise_for_status()
+            return response.json()
+        except Exception as e:
+            logging.error(f"Error fetching brawler statistics: {e}")
+            return {}
