@@ -1123,6 +1123,120 @@ class BrawlStarsApp:
             
             st.plotly_chart(fig, use_container_width=True)
 
+        st.markdown("---")  # Trennlinie
+        
+        # Game Mode Statistics
+        st.write("### 🎮 Game Mode Statistics")
+        gamemode_data = self.data_processor.get_gamemode_statistics(
+            player_tag,
+            start_date=start_datetime,
+            end_date=end_datetime
+        )
+        
+        if gamemode_data and 'game_mode_statistics' in gamemode_data:
+            # Convert to DataFrame and sort by battles
+            df = pd.DataFrame(gamemode_data['game_mode_statistics'])
+            df = df.sort_values('battles', ascending=False)
+            
+            # Format battle_mode names for better readability
+            df['battle_mode'] = df['battle_mode'].apply(lambda x: ' '.join(
+                word.capitalize() for word in x.split('_')
+            ))
+            
+            # Display as interactive table
+            st.dataframe(
+                df,
+                column_config={
+                    "battle_mode": st.column_config.TextColumn("Game Mode", width="medium"),
+                    "battles": st.column_config.NumberColumn("Battles", width="small"),
+                    "victories": st.column_config.NumberColumn("Victories", width="small"),
+                    "trophy_change": st.column_config.NumberColumn("Trophy Δ", width="small"),
+                    "win_rate": st.column_config.NumberColumn("Win Rate", width="small", format="%.1f%%"),
+                    "avg_duration": st.column_config.NumberColumn("Avg Duration", width="small", format="%.1f s"),
+                    "avg_trophies_per_battle": st.column_config.NumberColumn("Trophies/Battle", width="small", format="%.2f"),
+                    "seconds_per_trophy": st.column_config.NumberColumn("Seconds/Trophy", width="small", format="%.1f")
+                },
+                hide_index=True,
+                use_container_width=True
+            )
+            
+            # Add Game Mode Performance Analysis
+            st.write("#### Game Mode Performance Analysis")
+            
+            # Filter modes with at least 10 battles for better visualization
+            df_filtered = df[df['battles'] >= 10].copy()
+            
+            # Create Plotly grouped bar chart
+            fig = px.bar(
+                df_filtered,
+                x='battle_mode',
+                y=['battles', 'victories'],
+                barmode='group',
+                height=400,
+                labels={
+                    'battle_mode': 'Game Mode',
+                    'value': 'Count',
+                    'variable': 'Type'
+                }
+            )
+            
+            # Rotate x-axis labels for better readability
+            fig.update_layout(
+                xaxis_tickangle=-45,
+                plot_bgcolor='rgba(0,0,0,0)',
+                showlegend=True
+            )
+            
+            st.plotly_chart(fig, use_container_width=True)
+
+        st.markdown("---")  # Trennlinie
+        
+        # Map Statistics
+        st.write("### 🗺️ Map Statistics")
+        map_data = self.data_processor.get_map_statistics(
+            player_tag,
+            start_date=start_datetime,
+            end_date=end_datetime
+        )
+        
+        if map_data and 'map_statistics' in map_data:
+            # Convert to DataFrame and sort by battles
+            df = pd.DataFrame(map_data['map_statistics'])
+            df = df.sort_values('battles', ascending=False)
+            
+            # Create compact most played brawler info
+            df['most_played'] = df['most_played_brawler'].apply(
+                lambda x: f"{x['brawler_name']} ({x['battles']})"
+            )
+            
+            # Create compact most trophies brawler info
+            df['most_trophies'] = df['most_trophy_brawler'].apply(
+                lambda x: f"{x['brawler_name']} ({x['trophy_change']:+})"
+            )
+            
+            # Display as interactive table
+            st.dataframe(
+                df,
+                column_config={
+                    "event_map": st.column_config.TextColumn("Map", width="medium"),
+                    "battle_mode": st.column_config.TextColumn("Mode", width="small"),
+                    "battles": st.column_config.NumberColumn("Battles", width="small"),
+                    "victories": st.column_config.NumberColumn("Victories", width="small"),
+                    "trophy_change": st.column_config.NumberColumn("Trophy Δ", width="small"),
+                    "win_rate": st.column_config.NumberColumn("Win Rate", width="small", format="%.1f%%"),
+                    "avg_duration": st.column_config.NumberColumn("Avg Duration", width="small", format="%.1f s"),
+                    "avg_trophies_per_battle": st.column_config.NumberColumn("Trophies/Battle", width="small", format="%.2f"),
+                    "most_played": st.column_config.TextColumn("Most Played", width="small"),
+                    "most_trophies": st.column_config.TextColumn("Most Trophies By", width="small")
+                },
+                column_order=[
+                    "event_map", "battle_mode", "battles", "victories", "trophy_change",
+                    "win_rate", "avg_duration", "avg_trophies_per_battle", "most_played", "most_trophies"
+                ],
+                hide_index=True,
+                use_container_width=True
+            )
+
 def main():
     """Hauptfunktion zum Starten der App"""
     app = BrawlStarsApp()

@@ -497,3 +497,55 @@ class BrawlStarsDataProcessor:
         except Exception as e:
             logging.error(f"Error fetching brawler statistics: {e}")
             return {}
+
+    def get_gamemode_statistics(self, player_tag: str, start_date: str = None, end_date: str = None) -> Dict:
+        """
+        Fetches gamemode statistics from custom API
+        
+        Args:
+            player_tag (str): Player tag
+            start_date (str, optional): Start date in ISO format
+            end_date (str, optional): End date in ISO format
+        """
+        try:
+            params = {"player_tag": player_tag}
+            if start_date:
+                params["start_date"] = start_date
+            if end_date:
+                params["end_date"] = end_date
+                
+            response = requests.get(
+                f"http://13.49.97.84:8000/gamemode-statistics",
+                params=params
+            )
+            response.raise_for_status()
+            return response.json()
+        except Exception as e:
+            logging.error(f"Error fetching gamemode statistics: {e}")
+            return {}
+
+    def get_map_statistics(self, player_tag: str, start_date: str = None, end_date: str = None) -> Dict:
+        """
+        Fetches map statistics from custom API
+        
+        Args:
+            player_tag (str): Player tag
+            start_date (str, optional): Start date in ISO format
+            end_date (str, optional): End date in ISO format
+        """
+        try:
+            params = {"player_tag": player_tag}
+            if start_date:
+                params["start_date"] = start_date
+            if end_date:
+                params["end_date"] = end_date
+                
+            response = requests.get(
+                f"http://13.49.97.84:8000/map-statistics",
+                params=params
+            )
+            response.raise_for_status()
+            return response.json()
+        except Exception as e:
+            logging.error(f"Error fetching map statistics: {e}")
+            return {}
