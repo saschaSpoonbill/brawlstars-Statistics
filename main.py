@@ -384,7 +384,7 @@ class BrawlStarsApp:
                     if members2:
                         member_list2 = [f"{m['name']} ({m['tag']})" for m in members2['items']]
                         default_index2 = next((i for i, m in enumerate(member_list2) 
-                                            if "Hydropi" in m), 0)
+                                            if "Creppy" in m), 0)
                         player2 = st.selectbox(
                             "Select Player 2",
                             options=member_list2,
@@ -593,83 +593,45 @@ class BrawlStarsApp:
             unsafe_allow_html=True
         )
 
-    def _display_battle_logs(self, battles1: Dict, battles2: Dict, 
-                            player1_tag: str, player2_tag: str) -> None:
-        """Shows the battle logs of both players"""
-        st.header("Recent Games")
+    def _display_battle_logs(self, battles1, battles2, player1_tag, player2_tag):
+        """Displays battle logs for both players side by side"""
+        player1_name = self._get_player_name(player1_tag)
+        player2_name = self._get_player_name(player2_tag)
         
-        # Trophy progression as line chart
-        st.subheader("Trophy Progression in Recent Games")
+        # Trophy Progress Chart
+        st.write("### Trophy Progression in Recent Games")
         
-        # Get player names from player info
-        player1_data = self.api_client.get_player_info(player1_tag)
-        player2_data = self.api_client.get_player_info(player2_tag)
-        
-        player1_name = player1_data['name'] if player1_data else "Player 1"
-        player2_name = player2_data['name'] if player2_data else "Player 2"
-        
-        # Helper function to calculate cumulative trophies
-        def calculate_cumulative_trophies(battles, player_tag):
-            trophy_changes = []
-            cumulative = 0
+        if battles1 and battles2:
+            # Process battle data for player 1
+            formatted_battles1, star_count1 = self.data_processor.format_battle_log(battles1, player1_tag)
+            df1 = pd.DataFrame(formatted_battles1)
+            df1['Trophy_Change'] = pd.to_numeric(df1['Trophy Change'], errors='coerce').fillna(0)
+            df1['Cumulative_Trophies'] = df1['Trophy_Change'].cumsum()
             
-            for battle in battles['items']:
-                if 'battle' not in battle or 'trophyChange' not in battle['battle']:
-                    continue
-                    
-                trophy_change = 0
-                if 'teams' in battle['battle']:
-                    for team in battle['battle']['teams']:
-                        for player in team:
-                            if player['tag'] == player_tag:
-                                trophy_change = battle['battle']['trophyChange']
-                
-                cumulative += trophy_change
-                trophy_changes.append(cumulative)
-                
-            return trophy_changes
-
-        # Calculate cumulative trophies for both players
-        trophies1 = calculate_cumulative_trophies(battles1, player1_tag)
-        trophies2 = calculate_cumulative_trophies(battles2, player2_tag)
+            # Process battle data for player 2
+            formatted_battles2, star_count2 = self.data_processor.format_battle_log(battles2, player2_tag)
+            df2 = pd.DataFrame(formatted_battles2)
+            df2['Trophy_Change'] = pd.to_numeric(df2['Trophy Change'], errors='coerce').fillna(0)
+            df2['Cumulative_Trophies'] = df2['Trophy_Change'].cumsum()
+            
+            # Create comparison data
+            chart_data = pd.DataFrame({
+                player1_name: df1['Cumulative_Trophies'].values,
+                player2_name: df2['Cumulative_Trophies'].values
+            })
+            
+            # Use native Streamlit line chart
+            st.line_chart(
+                chart_data,
+                height=300
+            )
         
-        # Create DataFrame for the line chart with actual names
-        chart_data = pd.DataFrame({
-            'Game': range(1, max(len(trophies1), len(trophies2)) + 1),
-            player1_name: trophies1 + [None] * (len(trophies2) - len(trophies1)) if len(trophies2) > len(trophies1) else trophies1,
-            player2_name: trophies2 + [None] * (len(trophies1) - len(trophies2)) if len(trophies1) > len(trophies2) else trophies2
-        })
-        
-        # Create line chart with Plotly and actual names
-        fig = px.line(
-            chart_data,
-            x='Game',
-            y=[player1_name, player2_name],
-            color_discrete_map={
-                player1_name: '#8B0000',  # Dark red
-                player2_name: '#00008B'   # Dark blue
-            }
-        )
-        
-        # Adjust layout
-        fig.update_layout(
-            xaxis_title="Game Number",
-            yaxis_title="Cumulative Trophy Change",
-            plot_bgcolor='rgba(0,0,0,0)',
-            height=400
-        )
-        
-        st.plotly_chart(fig, use_container_width=True)
-        
-        # Original battle log display
+        # Display battle logs in columns
         col1, col2 = st.columns(2)
         
         with col1:
-            formatted_battles1, star_count1 = self.data_processor.format_battle_log(
-                battles1, player1_tag)
             if formatted_battles1:
                 stats1 = self.data_processor.calculate_battle_statistics(formatted_battles1)
-                
                 st.metric("Victories", f"{stats1['victories']}/{stats1['total_games']}")
                 st.metric("Win Rate", f"{stats1['win_rate']:.1f}%")
                 st.metric("Star Player", f"{star_count1}x ⭐")
@@ -686,32 +648,11 @@ class BrawlStarsApp:
                         """,
                         unsafe_allow_html=True
                     )
+                st.dataframe(pd.DataFrame(formatted_battles1))
                 
-                st.dataframe(
-                    pd.DataFrame(formatted_battles1),
-                    column_config={
-                        'Time': st.column_config.TextColumn('Time', width='medium'),
-                        'Brawler': st.column_config.TextColumn('Brawler', width='medium'),
-                        'Power': st.column_config.NumberColumn('Power', width='small'),
-                        'Trophies': st.column_config.NumberColumn('Trophies', width='small'),
-                        'Mode': st.column_config.TextColumn('Mode', width='medium'),
-                        'Map': st.column_config.TextColumn('Map', width='medium'),
-                        'Type': st.column_config.TextColumn('Type', width='small'),
-                        'Result': st.column_config.TextColumn('Result', width='small'),
-                        'Duration': st.column_config.TextColumn('Duration', width='small'),
-                        'Trophy Change': st.column_config.NumberColumn('Trophy Δ', width='small'),
-                        'Rank': st.column_config.TextColumn('Rank', width='small'),
-                        'Star Player': st.column_config.TextColumn('★', width='small'),
-                    },
-                    hide_index=True
-                )
-
         with col2:
-            formatted_battles2, star_count2 = self.data_processor.format_battle_log(
-                battles2, player2_tag)
             if formatted_battles2:
                 stats2 = self.data_processor.calculate_battle_statistics(formatted_battles2)
-                
                 st.metric("Victories", f"{stats2['victories']}/{stats2['total_games']}")
                 st.metric("Win Rate", f"{stats2['win_rate']:.1f}%")
                 st.metric("Star Player", f"{star_count2}x ⭐")
@@ -728,7 +669,6 @@ class BrawlStarsApp:
                         """,
                         unsafe_allow_html=True
                     )
-                
                 st.dataframe(pd.DataFrame(formatted_battles2))
 
     def _show_clubs_page(self) -> None:
@@ -1236,6 +1176,11 @@ class BrawlStarsApp:
                 hide_index=True,
                 use_container_width=True
             )
+
+    def _get_player_name(self, player_tag: str) -> str:
+        """Gets the player name from player tag"""
+        player_data = self.api_client.get_player_info(player_tag)
+        return player_data['name'] if player_data else "Unknown Player"
 
 def main():
     """Hauptfunktion zum Starten der App"""
