@@ -597,10 +597,17 @@ class BrawlStarsApp:
         """Displays battle logs for both players side by side"""
         player1_name = self._get_player_name(player1_tag)
         player2_name = self._get_player_name(player2_tag)
-        
+
+        # Ensure variables exist even if battle logs are missing
+        formatted_battles1 = []
+        formatted_battles2 = []
+        star_count1 = 0
+        star_count2 = 0
+
         # Trophy Progress Chart
         st.write("### Trophy Progression in Recent Games")
-        
+        if not battles1 or not battles2:
+            st.info("Battle logs not available for one or both players.")
         if battles1 and battles2:
             # Process battle data for player 1
             formatted_battles1, star_count1 = self.data_processor.format_battle_log(battles1, player1_tag)
