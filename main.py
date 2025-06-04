@@ -841,7 +841,7 @@ class BrawlStarsApp:
         Create a concise analysis, in maximum 6-8 sentences, comparing these players.
         Highlight key differences and mention who is stronger in which areas.
         Just one paragraph in response.
-        Classify the players based on their trophy count using this scale: Beginner (0 to 700), Novice (701 to 3,000), Intermediate (3,001 to 10,000), Proficient (10,001 to 20,000), Advanced (20,001 to50,000), Expert (50,001+).
+        Classify the players based on their trophy count using this scale: Beginner (0 to 700), Novice (701 to 3,000), Intermediate (3,001 to 10,000), Proficient (10,001 to 20,000), Advanced (20,001 to 50,000), Expert (50,001+).
         Focus on the most significant stats that show the skill and progress level of each player.
         """
 
